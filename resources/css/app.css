@@ -19,6 +19,15 @@ body {
   );
 }
 
+.main-body {
+  background: linear-gradient(
+    135deg,
+    #090014 0%,
+    #1A0B2E 50%,
+    #4C1D95 100%
+  );
+}
+
 .nav-ul li{
   display: flex;
   align-items: center;
