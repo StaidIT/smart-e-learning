@@ -79,9 +79,9 @@
             <button class="bg-[#CECBF6] text-[#26215C] text-[13px] font-bold px-5 py-2 rounded-lg">
                 Take Quiz
             </button>
-            <button class="border-[1.5px] border-white/25 text-white text-[13px] px-5 py-2 rounded-lg">
+            <a href="{{ route('discrete_math') }}" class="border-[1.5px] border-white/25 text-white text-[13px] px-5 py-2 rounded-lg">
                 View All Topics
-            </button>
+            </a>
         </div>
 
     </div>
