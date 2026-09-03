@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Smart E-Learning</title>
+    <link rel="shortcut icon" href="{{ asset('images/Components/Logo.png') }}" type="image/x-icon">
+
+    <style>
+        .topics-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .topics-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .topics-scroll::-webkit-scrollbar-thumb {
+            background-color: #E5E0F0;
+            border-radius: 999px;
+        }
+        .topics-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #C9BEE8;
+        }
+        .topics-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #E5E0F0 transparent;
+        }
+    </style>
+
+</head>
+    <body class="h-screen w-screen bg-gray-50 overflow-hidden">
+        <div id="app" class="h-full">
+
+            <bottom-navigation></bottom-navigation>
+            <navigation 
+                active-page="Dashboard"
+                :id-number="{{auth()->user()->id_number}}"
+                user-name="{{auth()->user()->name}}"
+                user-email="{{auth()->user()->email}}"
+            ></navigation>
+
+            <main class="w-full main-bg md:w-[calc(100%-280px)] h-full flex flex-col md:ml-[280px] ml-0 p-5 overflow-hidden">
+                <dashboard-cards
+                    :total-user="{{$total_users}}"
+                ></dashboard-cards>
+
+                <overview
+                :recent-activities='@json($recent_activities)'
+                ></overview>
+
+            </main>
+        </div>
+        
+
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </body>
+</html>

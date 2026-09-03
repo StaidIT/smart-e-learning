@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Services\MailerService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+class Register extends Controller
+{
+    public function register(Request $request, MailerService $mailerService){
+        $validated_data = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed'
+        ]);
+
+        $otp_code = rand(100000, 999999);
+        $id_number = random_int(100000000, 999999999);
+
+        $user = User::create([
+            'id_number' => $id_number,
+            'name' => $validated_data['name'],
+            'email' => $validated_data['email'],
+            'password' => Hash::make($validated_data['password']),
+            'otp_verification' => $otp_code,
+            'otp_expiration' => Carbon::now()->addMinutes(10),
+            'last_seen' => Carbon::now()
+        ]);
+
+        $mailerService->sendMail($user->email, $user->name, $otp_code);
+
+        session([
+            'otp_session' => [
+                'otp_id' => Str::random(40),
+                'user_id' => $user->id
+            ]
+        ]);
+
+        return redirect()->route('account_verification');
+    }
+}
