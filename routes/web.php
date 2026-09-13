@@ -15,6 +15,7 @@ use App\Models\Subjects;
 use App\Models\Topics;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CompilerController;
 
 
 
@@ -142,3 +143,7 @@ Route::middleware(['auth','Admin'])->group(function(){
 
     Route::post('/logout', [Logout::class, 'logout']);
 });
+
+//compiler
+Route::get('/compiler', [CompilerController::class, 'index']);
+Route::post('/run-code', [CompilerController::class, 'run']);
