@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class RecentActivity extends Model
 {
-    public $timestamps = false;
 
+    const UPDATED_AT = null;
     protected $fillable = [
         'name',
         'action',
@@ -17,7 +17,6 @@ class RecentActivity extends Model
         'from_role',
         'to_role',
         'feedback',
-        'created_at',
     ];
 
     protected static function booted()

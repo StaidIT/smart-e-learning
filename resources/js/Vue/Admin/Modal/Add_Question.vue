@@ -6,8 +6,7 @@
       class="fixed inset-0 w-screen h-screen bg-black/60 backdrop-blur-sm z-[99] flex items-center justify-center p-4"
     >
       <Transition name="modal-scale" appear>
-        <form
-          @submit.prevent="addQuestionForm(topicName, subjectName)"
+        <div
           class="relative w-[30%] min-w-[380px] max-w-lg bg-white rounded-xl shadow-2xl shadow-black/30 flex flex-col p-6 gap-5 max-h-[90vh] overflow-y-auto scrollbar-thin"
         >
           <!-- CLOSE BUTTON -->
@@ -22,7 +21,7 @@
             </svg>
           </button>
 
-          <input type="hidden" v-model="topic_id">
+          <input type="hidden" v-model="module_id">
 
           <div class="w-full flex flex-col gap-1 pr-6">
             <div class="flex items-center gap-3">
@@ -58,308 +57,506 @@
                 <span
                   class="py-1 px-2.5 text-xs font-semibold shrink-0 text-yellow-600 rounded-md border border-yellow-200 bg-yellow-50"
                 >
-                  {{ topicName }}
+                  {{ moduleName }}
                 </span>
               </div>
             </div>
 
-            <!-- QUESTION -->
-            <div class="w-full flex flex-col gap-2 mt-3">
-              <label
-                for="question"
-                class="text-sm font-medium text-gray-700"
+            <!-- MODE SWITCHER -->
+            <div class="w-full flex items-center gap-1 mt-3 p-1 rounded-lg bg-gray-100">
+              <button
+                type="button"
+                @click="entryMode = 'manual'"
+                :class="[
+                  'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer',
+                  entryMode === 'manual'
+                    ? 'bg-white text-[#8B5CF6] shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                ]"
               >
-                Question
-              </label>
-
-              <input
-                v-model="question"
-                type="text"
-                id="question"
-                placeholder="Enter Question"
-                class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors"
-              >
-            </div>
-
-            <!-- QUESTION TYPE -->
-            <div class="flex flex-col gap-1.5 py-3">
-              <label
-                for="quizType"
-                class="text-sm font-medium text-gray-700"
-              >
-                Question Type
-              </label>
-
-              <div class="relative">
-                <select
-                  id="quizType"
-                  v-model="selected_questionType"
-                  class="w-full appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-9 text-sm text-gray-700
-                    focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 focus:border-[#8B5CF6]
-                    hover:border-gray-400 transition-colors cursor-pointer"
-                >
-                  <option value="">Select Question Type</option>
-                  <option value="multipleChoice">Multiple Choice</option>
-                  <option value="TorF">True or False</option>
-                  <option value="identification">Identification</option>
-                </select>
-
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.549 2.8a2.118 2.118 0 0 1 2.995 2.995l-1.688 1.688m-2.994-2.996-10.563 10.563a4.5 4.5 0 0 0-1.242 2.273l-.688 3.435 3.435-.688a4.5 4.5 0 0 0 2.273-1.242l10.563-10.563m-2.994-2.996 2.994 2.996" />
                 </svg>
-              </div>
+                Manual Entry
+              </button>
+
+              <button
+                type="button"
+                @click="entryMode = 'upload'"
+                :class="[
+                  'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer',
+                  entryMode === 'upload'
+                    ? 'bg-white text-[#8B5CF6] shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                ]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Upload File
+              </button>
             </div>
 
-            <Transition name="mc-slide">
-              <!-- MULTIPLE CHOICE -->
-              <div
-                v-if="mc"
-                class="w-full flex flex-col gap-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 p-4"
-              >
-                <div class="flex items-center justify-between">
-                    <label class="text-sm font-medium text-gray-700">Multiple Choice</label>
-                    <span class="text-xs text-gray-400">Select the correct answer</span>
+            <!-- ================= MANUAL ENTRY MODE ================= -->
+            <form
+              v-if="entryMode === 'manual'"
+              @submit.prevent="addQuestionForm(moduleName, subjectName)"
+              class="w-full flex flex-col gap-2"
+            >
+              <!-- QUESTION -->
+              <div class="w-full flex flex-col gap-2 mt-3">
+                <label for="question" class="text-sm font-medium text-gray-700">
+                  Question
+                </label>
+
+                <textarea
+                  v-model="question"
+                  id="question"
+                  placeholder="Enter Question"
+                  rows="2"
+                  class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[64px]"
+                ></textarea>
+              </div>
+
+              <!-- QUESTION TYPE -->
+              <div class="flex flex-col gap-1.5 py-3">
+                <label
+                  for="quizType"
+                  class="text-sm font-medium text-gray-700"
+                >
+                  Question Type
+                </label>
+
+                <div class="relative">
+                  <select
+                    id="quizType"
+                    v-model="selected_questionType"
+                    class="w-full appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-9 text-sm text-gray-700
+                      focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 focus:border-[#8B5CF6]
+                      hover:border-gray-400 transition-colors cursor-pointer"
+                  >
+                    <option value="">Select Question Type</option>
+                    <option value="multipleChoice">Multiple Choice</option>
+                    <option value="TorF">True or False</option>
+                    <option value="identification">Identification</option>
+                    <option value="coding">Coding</option>
+                  </select>
+
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                  </svg>
+                </div>
+              </div>
+
+              <Transition name="mc-slide">
+                <!-- MULTIPLE CHOICE -->
+                <div
+                  v-if="mc"
+                  class="w-full flex flex-col gap-2 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 p-4"
+                >
+                  <div class="flex items-center justify-between">
+                      <label class="text-sm font-medium text-gray-700">Multiple Choice</label>
+                      <span class="text-xs text-gray-400">Select the correct answer</span>
+                  </div>
+
+                  <!-- A -->
+                  <div class="w-full flex flex-col gap-1">
+                    <div class="w-full flex items-center gap-2">
+                      <label
+                        for="correct_a"
+                        class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      >
+                        <input v-model="correct_choice"
+                        @input="emptyChoiceAnswer = false"
+                        type="radio" name="correct_choice" id="correct_a" value="A" class="sr-only">
+                        A
+                      </label>
+
+                      <input
+                        v-model="choices.A"
+                        type="text"
+                        placeholder="Enter Choice A"
+                        @input="emptyChoices.A = false"
+                        :class="[
+                          'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
+                          emptyChoices.A
+                            ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
+                            : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
+                        ]"
+                      >
+                    </div>
+                    <span v-if="emptyChoices.A" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  </div>
+
+                  <!-- B -->
+                  <div class="w-full flex flex-col gap-1">
+                    <div class="w-full flex items-center gap-2">
+                      <label
+                        for="correct_b"
+                        class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      >
+                        <input v-model="correct_choice" 
+                        @input="emptyChoiceAnswer = false"
+                        type="radio" name="correct_choice" id="correct_b" value="B" class="sr-only">
+                        B
+                      </label>
+
+                      <input
+                        v-model="choices.B"
+                        type="text"
+                        placeholder="Enter Choice B"
+                        @input="emptyChoices.B = false"
+                        :class="[
+                          'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
+                          emptyChoices.B
+                            ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
+                            : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
+                        ]"
+                      >
+                    </div>
+                    <span v-if="emptyChoices.B" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  </div>
+
+                  <!-- C -->
+                  <div class="w-full flex flex-col gap-1">
+                    <div class="w-full flex items-center gap-2">
+                      <label
+                        for="correct_c"
+                        class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      >
+                        <input v-model="correct_choice" 
+                        @input="emptyChoiceAnswer = false"
+                        type="radio" name="correct_choice" id="correct_c" value="C" class="sr-only">
+                        C
+                      </label>
+
+                      <input
+                        v-model="choices.C"
+                        type="text"
+                        placeholder="Enter Choice C"
+                        @input="emptyChoices.C = false"
+                        :class="[
+                          'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
+                          emptyChoices.C
+                            ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
+                            : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
+                        ]"
+                      >
+                    </div>
+                    <span v-if="emptyChoices.C" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  </div>
+
+                  <!-- D -->
+                  <div class="w-full flex flex-col gap-1">
+                    <div class="w-full flex items-center gap-2">
+                      <label
+                        for="correct_d"
+                        class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      >
+                        <input v-model="correct_choice" 
+                        @input="emptyChoiceAnswer = false"
+                        type="radio" name="correct_choice" id="correct_d" value="D" class="sr-only">
+                        D
+                      </label>
+
+                      <input
+                        v-model="choices.D"
+                        type="text"
+                        placeholder="Enter Choice D"
+                        @input="emptyChoices.D = false"
+                        :class="[
+                          'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
+                          emptyChoices.D
+                            ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
+                            : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
+                        ]"
+                      >
+                    </div>
+                    <span v-if="emptyChoices.D" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  </div>
+
+                   <!-- EMPTY CORRECT ANSWER -->
+                  <div v-if="emptyChoiceAnswer" class="w-full flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2.5 mt-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-red-500 shrink-0 mt-0.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-8.99-3.75h.008v.008h-.008V8.25Z" />
+                      </svg>
+                      <div class="flex flex-col">
+                          <span class="text-red-600 font-semibold text-xs">Assign Correct Answer!</span>
+                          <span class="text-red-500 text-xs">Please assign the correct answer by choosing A, B, C, or D.</span>
+                      </div>
+                  </div>
                 </div>
 
-                <!-- A -->
-                <div class="w-full flex flex-col gap-1">
-                  <div class="w-full flex items-center gap-2">
+                <!-- TRUE OR FALSE -->
+                <div v-else-if="torf"
+                  class="w-full flex flex-col gap-2"
+                >
+                  <span class="text-sm font-medium text-gray-700">
+                    True or False
+                  </span>
+
+                  <div class="grid grid-cols-2 gap-3">
+                    <!-- TRUE -->
                     <label
-                      for="correct_a"
-                      class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      for="answer-true"
+                      class="relative flex items-center justify-center h-12 rounded-lg border cursor-pointer select-none transition-colors
+                        text-sm font-medium
+                        border-gray-300 text-gray-700 hover:border-gray-400
+                        has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 has-[:checked]:text-violet-700"
                     >
-                      <input v-model="correct_choice"
-                      @input="emptyChoiceAnswer = false"
-                      type="radio" name="correct_choice" id="correct_a" value="A" class="sr-only">
-                      A
+                      <input
+                        v-model="correct_answer"
+                        id="answer-true"
+                        type="radio"
+                        name="correct-answer"
+                        value="True"
+                        class="sr-only"
+                      >
+                      True
                     </label>
 
-                    <input
-                      v-model="choices.A"
-                      type="text"
-                      placeholder="Enter Choice A"
-                      @input="emptyChoices.A = false"
-                      :class="[
-                        'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
-                        emptyChoices.A
-                          ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
-                          : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
-                      ]"
-                    >
-                  </div>
-                  <span v-if="emptyChoices.A" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
-                </div>
-
-                <!-- B -->
-                <div class="w-full flex flex-col gap-1">
-                  <div class="w-full flex items-center gap-2">
+                    <!-- FALSE -->
                     <label
-                      for="correct_b"
-                      class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
+                      for="answer-false"
+                      class="relative flex items-center justify-center h-12 rounded-lg border cursor-pointer select-none transition-colors
+                        text-sm font-medium
+                        border-gray-300 text-gray-700 hover:border-gray-400
+                        has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 has-[:checked]:text-violet-700"
                     >
-                      <input v-model="correct_choice" 
-                      @input="emptyChoiceAnswer = false"
-                      type="radio" name="correct_choice" id="correct_b" value="B" class="sr-only">
-                      B
+                      <input
+                        v-model="correct_answer"
+                        id="answer-false"
+                        type="radio"
+                        name="correct-answer"
+                        value="False"
+                        class="sr-only"
+                      >
+                      False
                     </label>
-
-                    <input
-                      v-model="choices.B"
-                      type="text"
-                      placeholder="Enter Choice B"
-                      @input="emptyChoices.B = false"
-                      :class="[
-                        'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
-                        emptyChoices.B
-                          ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
-                          : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
-                      ]"
-                    >
                   </div>
-                  <span v-if="emptyChoices.B" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
                 </div>
 
-                <!-- C -->
-                <div class="w-full flex flex-col gap-1">
-                  <div class="w-full flex items-center gap-2">
-                    <label
-                      for="correct_c"
-                      class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
-                    >
-                      <input v-model="correct_choice" 
-                      @input="emptyChoiceAnswer = false"
-                      type="radio" name="correct_choice" id="correct_c" value="C" class="sr-only">
-                      C
-                    </label>
+                <!-- IDENTIFICATION -->
+                <div v-else-if="identification"
+                  class="w-full flex flex-col gap-2"
+                >
+                  <label
+                    for="identification"
+                    class="text-sm font-medium text-gray-700"
+                  >
+                    Identification
+                  </label>
 
-                    <input
-                      v-model="choices.C"
-                      type="text"
-                      placeholder="Enter Choice C"
-                      @input="emptyChoices.C = false"
-                      :class="[
-                        'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
-                        emptyChoices.C
-                          ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
-                          : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
-                      ]"
-                    >
+                  <input
+                    v-model="correct_answer"
+                    type="text"
+                    id="identification"
+                    placeholder="Enter Identification Answer"
+                    class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors"
+                  >
+                </div>
+              </Transition>
+
+              <!-- EXPLANATION -->
+              <div v-if="
+                  selected_questionType === 'multipleChoice' || 
+                  selected_questionType === 'TorF' ||
+                  selected_questionType === 'identification'" class="w-full flex flex-col gap-2 mt-3">
+                <label for="explanation" class="text-sm font-medium text-gray-700">
+                  Explanation
+                </label>
+
+                <textarea
+                  v-model="explanation"
+                  id="explanation"
+                  placeholder="Enter Explanation"
+                  rows="2"
+                  class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[64px]"
+                ></textarea>
+              </div>
+              
+              <!-- EXPECTED OUTPUT -->
+              <div v-if="selected_questionType === 'coding'" class="w-full flex flex-col gap-2 mt-3">
+                <label for="expected_output" class="text-sm font-medium text-gray-700">
+                  Expected Output
+                </label>
+
+                <textarea
+                  v-model="correct_answer"
+                  id="expected_output"
+                  placeholder="Enter Expected Output"
+                  rows="3"
+                  class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[80px] font-mono"
+                ></textarea>
+              </div>
+
+              <!-- BUTTONS -->
+              <div class="w-full flex gap-3 mt-4">
+                <button
+                  type="button"
+                  @click="closeModal"
+                  class="w-1/3 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  :disabled="isSubmitting"
+                  class="w-2/3 py-2.5 rounded-md text-sm font-medium text-white bg-[#8B5CF6] hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <svg v-if="isSubmitting" class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+                  </svg>
+                  {{ isSubmitting ? 'Adding...' : 'Add Question' }}
+                </button>
+              </div>
+            </form>
+
+            <!-- ================= UPLOAD FILE MODE ================= -->
+            <form
+              v-else
+              @submit.prevent="extractQuestionsForm"
+              class="w-full flex flex-col gap-2"
+            >
+              <div class="w-full flex flex-col gap-2 mt-3">
+                <label class="text-sm font-medium text-gray-700">
+                  Question File
+                </label>
+                <span class="text-xs text-gray-400 -mt-1">
+                  Accepts .docx, and .pdf files containing your questions.
+                </span>
+
+                <!-- DROPZONE -->
+                <div
+                  v-if="!selectedFile"
+                  @click="triggerFileInput"
+                  @dragover.prevent="isDragging = true"
+                  @dragleave.prevent="isDragging = false"
+                  @drop.prevent="handleDrop"
+                  :class="[
+                    'w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 cursor-pointer transition-colors',
+                    isDragging
+                      ? 'border-[#8B5CF6] bg-violet-50'
+                      : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+                  ]"
+                >
+                  <div class="shrink-0 w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8B5CF6" class="size-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
                   </div>
-                  <span v-if="emptyChoices.C" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  <div class="flex flex-col items-center gap-0.5 text-center">
+                    <span class="text-sm font-medium text-gray-700">
+                      Drop your file here, or <span class="text-[#8B5CF6]">browse</span>
+                    </span>
+                    <span class="text-xs text-gray-400">
+                      Max file size 10MB
+                    </span>
+                  </div>
+                  <input
+                    ref="fileInputRef"
+                    type="file"
+                    accept=".docx,.pdf"
+                    class="hidden"
+                    @change="handleFileSelect"
+                  >
                 </div>
 
-                <!-- D -->
-                <div class="w-full flex flex-col gap-1">
-                  <div class="w-full flex items-center gap-2">
-                    <label
-                      for="correct_d"
-                      class="relative flex items-center justify-center w-9 h-9 shrink-0 rounded-md text-xs font-semibold cursor-pointer select-none transition-colors bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 has-[:checked]:bg-[#8B5CF6] has-[:checked]:text-white has-[:checked]:border-[#8B5CF6]"
-                    >
-                      <input v-model="correct_choice" 
-                      @input="emptyChoiceAnswer = false"
-                      type="radio" name="correct_choice" id="correct_d" value="D" class="sr-only">
-                      D
-                    </label>
-
-                    <input
-                      v-model="choices.D"
-                      type="text"
-                      placeholder="Enter Choice D"
-                      @input="emptyChoices.D = false"
-                      :class="[
-                        'w-full border rounded-md p-2 outline-none text-sm bg-white placeholder:text-gray-400 focus:ring-2 transition-colors',
-                        emptyChoices.D
-                          ? 'border-red-400 bg-red-50/60 focus:border-red-400 focus:ring-red-400/20'
-                          : 'border-gray-300 focus:border-[#8B5CF6] focus:ring-[#8B5CF6]/20'
-                      ]"
-                    >
+                <!-- SELECTED FILE -->
+                <div
+                  v-else
+                  class="w-full flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                >
+                  <div class="shrink-0 w-9 h-9 rounded-md bg-violet-50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8B5CF6" class="size-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                    </svg>
                   </div>
-                  <span v-if="emptyChoices.D" class="pl-11 text-xs text-red-500">This choice can't be empty</span>
+                  <div class="flex flex-col flex-1 min-w-0">
+                    <span class="text-sm font-medium text-gray-700 truncate">
+                      {{ selectedFile.name }}
+                    </span>
+                    <span class="text-xs text-gray-400">
+                      {{ formattedFileSize }}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    @click="removeFile"
+                    aria-label="Remove file"
+                    class="shrink-0 p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                 <!-- EMPTY CORRECT ANSWER -->
-                <div v-if="emptyChoiceAnswer" class="w-full flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2.5 mt-1">
+                <!-- NO FILE ERROR -->
+                <div v-if="emptyFileError" class="w-full flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2.5 mt-1">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-red-500 shrink-0 mt-0.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-8.99-3.75h.008v.008h-.008V8.25Z" />
                     </svg>
                     <div class="flex flex-col">
-                        <span class="text-red-600 font-semibold text-xs">Assign Correct Answer!</span>
-                        <span class="text-red-500 text-xs">Please assign the correct answer by choosing A, B, C, or D.</span>
+                        <span class="text-red-600 font-semibold text-xs">Select a file!</span>
+                        <span class="text-red-500 text-xs">Please choose or drop a file to extract questions from.</span>
                     </div>
                 </div>
               </div>
 
-              <!-- TRUE OR FALSE -->
-              <div v-else-if="torf"
-                class="w-full flex flex-col gap-2"
-              >
-                <span class="text-sm font-medium text-gray-700">
-                  True or False
-                </span>
-
-                <div class="grid grid-cols-2 gap-3">
-                  <!-- TRUE -->
-                  <label
-                    for="answer-true"
-                    class="relative flex items-center justify-center h-12 rounded-lg border cursor-pointer select-none transition-colors
-                      text-sm font-medium
-                      border-gray-300 text-gray-700 hover:border-gray-400
-                      has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 has-[:checked]:text-violet-700"
-                  >
-                    <input
-                      v-model="correct_answer"
-                      id="answer-true"
-                      type="radio"
-                      name="correct-answer"
-                      value="True"
-                      class="sr-only"
-                    >
-                    True
-                  </label>
-
-                  <!-- FALSE -->
-                  <label
-                    for="answer-false"
-                    class="relative flex items-center justify-center h-12 rounded-lg border cursor-pointer select-none transition-colors
-                      text-sm font-medium
-                      border-gray-300 text-gray-700 hover:border-gray-400
-                      has-[:checked]:border-violet-500 has-[:checked]:bg-violet-50 has-[:checked]:text-violet-700"
-                  >
-                    <input
-                      v-model="correct_answer"
-                      id="answer-false"
-                      type="radio"
-                      name="correct-answer"
-                      value="False"
-                      class="sr-only"
-                    >
-                    False
-                  </label>
-                </div>
-              </div>
-
-              <!-- IDENTIFICATION -->
-              <div v-else-if="identification"
-                class="w-full flex flex-col gap-2"
-              >
-                <label
-                  for="identification"
-                  class="text-sm font-medium text-gray-700"
+              <!-- BUTTONS -->
+              <div class="w-full flex gap-3 mt-4">
+                <button
+                  type="button"
+                  @click="closeModal"
+                  class="w-1/3 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
-                  Identification
-                </label>
+                  Cancel
+                </button>
 
-                <input
-                  v-model="correct_answer"
-                  type="text"
-                  id="identification"
-                  placeholder="Enter Identification Answer"
-                  class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors"
+                <button
+                  type="submit"
+                  :disabled="isSubmitting"
+                  class="w-2/3 py-2.5 rounded-md text-sm font-medium text-white bg-[#8B5CF6] hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
+                  <svg v-if="isSubmitting" class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+                  </svg>
+                  {{ isSubmitting ? 'Extracting...' : 'Extract Questions' }}
+                </button>
               </div>
-            </Transition>
-
-          
+            </form>
 
           </div>
-
-          <!-- BUTTONS -->
-          <div class="w-full flex gap-3 mt-0.5">
-            <button
-              type="button"
-              @click="closeModal"
-              class="w-1/3 py-2.5 rounded-md text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              :disabled="isSubmitting"
-              class="w-2/3 py-2.5 rounded-md text-sm font-medium text-white bg-[#8B5CF6] hover:bg-[#7C3AED] active:bg-[#6D28D9] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <svg v-if="isSubmitting" class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
-              </svg>
-              {{ isSubmitting ? 'Adding...' : 'Add Question' }}
-            </button>
-          </div>
-        </form>
+        </div>
       </Transition>
     </div>
   </Transition>
 
   <Toast
-        :show="showToast"
-        :message="message"
-        @close="showToast = false"
-    />
+    :show="showToast"
+    :message="message"
+    @close="showToast = false"
+  />
+
+  <Preview_Extracted_Questions
+    :show-preview="showPreview"
+    :questions="extractedQuestions"
+    :subject-name="subjectName"
+    :module-name="moduleName"
+    :module-id="moduleId"
+    @close-preview="showPreview = false"
+    @questions-added="handleQuestionsAdded"
+  />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import Toast from '../components/Toast.vue';
+import Preview_Extracted_Questions from './Preview_Extracted_Questions.vue';
 
 const props = defineProps({
   showAddQuestion: {
@@ -367,7 +564,7 @@ const props = defineProps({
     default: false
   },
 
-  topicName: {
+  moduleName: {
     type: String,
     default: 'N/A'
   },
@@ -376,16 +573,19 @@ const props = defineProps({
     type: String,
     default: 'N/A'
   },
-  topicId: {
-    type: Number,
-    default: 1
+  moduleId: {
+    type: String,
+    required:true
   }
 });
 
-const topic_id = computed(() => props.topicId || 0);
+const module_id = computed(() => props.moduleId);
 const showToast = ref(false);
 const message = ref('');
 const isSubmitting = ref(false)
+
+
+const entryMode = ref('manual'); 
 
 const emptyChoiceAnswer = ref(false);
 const emptyChoices = ref({
@@ -395,10 +595,14 @@ const emptyChoices = ref({
   D: false
 });
 
-const emit = defineEmits(['close-add']);
+const emit = defineEmits(['close-add', 'questions-added']);
+function handleQuestionsAdded(newQuestions) {
+    emit('questions-added', newQuestions);
+}
 
 const question = ref('');
 const selected_questionType = ref('');
+const explanation = ref('');
 
 const correct_choice = ref('');
 const correct_answer = ref('');
@@ -422,17 +626,53 @@ const identification = computed(() => {
   return selected_questionType.value === 'identification';
 });
 
+// ---- FILE UPLOAD STATE ----
+const fileInputRef = ref(null);
+const selectedFile = ref(null);
+const isDragging = ref(false);
+const emptyFileError = ref(false);
+const showPreview = ref(false);
+const extractedQuestions = ref([]);
+
+const formattedFileSize = computed(() => {
+  if (!selectedFile.value) return '';
+  const kb = selectedFile.value.size / 1024;
+  return kb < 1024 ? `${kb.toFixed(1)} KB` : `${(kb / 1024).toFixed(1)} MB`;
+});
+
+function triggerFileInput() {
+  fileInputRef.value?.click();
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files?.[0];
+  if (file) {
+    selectedFile.value = file;
+    emptyFileError.value = false;
+  }
+}
+
+function handleDrop(event) {
+  isDragging.value = false;
+  const file = event.dataTransfer.files?.[0];
+  if (file) {
+    selectedFile.value = file;
+    emptyFileError.value = false;
+  }
+}
+
+function removeFile() {
+  selectedFile.value = null;
+  if (fileInputRef.value) fileInputRef.value.value = '';
+}
+
 function closeModal() {
   emit('close-add');
 }
 
-
-async function addQuestionForm(Sname, Tname) {
-
+async function addQuestionForm(Sname, Mname) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
     emptyChoiceAnswer.value = correct_choice.value === '' && mc.value;
-
     if (mc.value) {
         emptyChoices.value = {
             A: choices.value.A === '',
@@ -440,17 +680,13 @@ async function addQuestionForm(Sname, Tname) {
             C: choices.value.C === '',
             D: choices.value.D === ''
         };
-
         if (Object.values(emptyChoices.value).some(Boolean) || emptyChoiceAnswer.value) {
             return;
         }
     }
-
     if (isSubmitting.value) return;
-
     isSubmitting.value = true;
     
-
     try{
         const response = await fetch('/addQuestion', {
             method: "POST",
@@ -461,6 +697,7 @@ async function addQuestionForm(Sname, Tname) {
             },
             body: JSON.stringify({
                 question: question.value,
+                explanation: explanation.value,
                 question_type: selected_questionType.value,
                 correct_choice: correct_choice.value,
                 correct_answer: correct_answer.value,
@@ -468,10 +705,10 @@ async function addQuestionForm(Sname, Tname) {
                 choice_B: choices.value.B,
                 choice_C: choices.value.C,
                 choice_D: choices.value.D,
-                topic_id: topic_id.value,
+                module_id: module_id.value,
 
                 subject_name : Sname,
-                topic_name: Tname
+                module_name: Mname
             })
         });
         const data = await response.json();
@@ -482,16 +719,75 @@ async function addQuestionForm(Sname, Tname) {
         }
 
         if (data.success) {
-            showToast.value = true;
-            message.value = data.message;
-            emit('close-add');
+          showToast.value = true;
+          message.value = data.message;
+          emit('questions-added', data.new_questions);
+          emit('close-add');
+      }
+        console.log('Status:', response.status);
+        console.log('Response:', data);
+
+        if (!response.ok) {
+            console.error('Validation errors:', data.errors);
+            return;
         }
 
     }finally{
       isSubmitting.value = false
+      question.value = '';
+      selected_questionType.value = '';
+      choices.value = {
+        A : '',
+        B: '',
+        C: '',
+        D: ''
+      }
+      correct_choice.value = '';
+      correct_answer.value = '';
+      explanation.value = '';
     }
+}
 
-    
+async function extractQuestionsForm() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    emptyFileError.value = !selectedFile.value;
+
+    if (emptyFileError.value) return;
+    if (isSubmitting.value) return;
+
+    isSubmitting.value = true;
+
+    const formData = new FormData();
+    formData.append('file', selectedFile.value);
+    formData.append('module_id', module_id.value);
+
+    try {
+        const response = await fetch('/extractQuestions', {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.log('Server errors:', JSON.stringify(data, null, 2));
+            return;
+        }
+
+        if (data.success) {
+            extractedQuestions.value = data.questions || [];
+            showPreview.value = true;
+            emit('close-add');
+        }
+    } finally {
+        isSubmitting.value = false;
+        removeFile();
+    }
 }
 
 </script>

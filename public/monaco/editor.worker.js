@@ -1,0 +1,1 @@
+importScripts('/build/assets/editor.worker.js')

@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="flex flex-col w-full justify-start gap-2">
-                <span class="text-2xl font-bold">1</span>
+                <span class="text-2xl font-bold">{{ totalAdmins }}</span>
                 <span class="font-semibold text-xs text-gray-400">TOTAL ADMINS</span>
             </div>
         </div>
@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="flex flex-col w-full justify-start gap-2">
-                <span class="text-2xl font-bold">4</span>
+                <span class="text-2xl font-bold">{{ totalSubjects }}</span>
                 <span class="font-semibold text-xs text-gray-400">TOTAL SUBJECTS</span>
             </div>
         </div>
@@ -58,7 +58,7 @@
                 </div>
             </div>
             <div class="flex flex-col w-full justify-start gap-2">
-                <span class="text-2xl font-bold">41</span>
+                <span class="text-2xl font-bold">{{ totalFeedback }}</span>
                 <span class="font-semibold text-xs text-gray-400">TOTAL FEEDBACKS</span>
             </div>
         </div>
@@ -70,6 +70,9 @@
 
 const props = defineProps({
     totalUser: { type: Number, default: 0},
+    totalSubjects:{ type:Number, default: 0},
+    totalAdmins: { type:Number, default: 0},
+    totalFeedback: { type: Number, default: 0}
 })
 
 </script>

@@ -7,10 +7,12 @@ use Illuminate\Support\Facades\Auth;
 
 class Logout extends Controller
 {
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'success' => true

@@ -95,7 +95,7 @@ const showToast = ref(false);
 const message = ref('');
 const isSubmitting = ref(false)
 
-const emit = defineEmits(['close-delete'])
+const emit = defineEmits(['close-delete', 'question-deleted'])
 const props = defineProps({
     showDeleteQuestion: {
         type: Boolean,
@@ -135,6 +135,7 @@ async function deleteQuestionForm(Sname, Tname){
             showToast.value = true
             message.value = data.message;
             emit('close-delete');
+            emit('question-deleted', data.questions);
         }
     }finally{
         isSubmitting.value = false

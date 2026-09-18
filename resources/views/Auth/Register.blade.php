@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | Smart E-Learning</title>
-    <link rel="shortcut icon" href="{{ asset('images/components/Favicon.png') }}" type="image/x-icon" sizes="any">
-
+    <link rel="shortcut icon" href="{{ asset('images/Components/Favicon.png') }}" type="image/x-icon">
+    @vite('resources/css/app.css')
     <style>
        
         input[type="password"]::-ms-reveal,
@@ -320,6 +320,6 @@
         </div>
     </div>
 
-    @vite(['resources/css/app.css', 'resources/js/Auth.js'])
+    @vite(['resources/js/Auth.js'])
 </body>
 </html>

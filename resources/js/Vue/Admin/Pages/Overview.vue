@@ -1,6 +1,6 @@
 <template>
 
-    <div class="w-full flex-1 min-h-0 grid grid-cols-[1.3fr_1fr] gap-6">
+    <div class="w-full flex-1 min-h-0 grid md:grid-cols-[1.3fr_1fr] gap-6">
 
         <!-- RECENT ACTIVITY -->
         <div class="border-[1.5px] border-[#CECBF6]/15 bg-[#CECBF6]/6 backdrop-blur-sm p-4 rounded-md flex flex-col h-full min-h-0 transition-all hover:border-[#CECBF6]/30 hover:bg-[#CECBF6]/10">
@@ -120,6 +120,10 @@
 
 <script setup>
 
+const props = defineProps({
+    recentActivities: { type: Array, default: ()=>[]},
+})
+
 const leaderboard = [
 
 ]
@@ -146,21 +150,7 @@ function initials(name) {
         .toUpperCase()
 }
 
-const props = defineProps({
-    recentActivities: { type: Array, default: ()=>[]},
-})
 
-// const recentActivities = [
-//     
-//     { id: 7, name: 'Jayson Layola', action: 'added_topic', subject: 'Data Structures and Algorithm', topic: 'Binary Search Trees' },
-//     { id: 8, name: 'Jared Marinas', action: 'added_subject', subject: 'Computer Programming 2' },
-//     { id: 9, name: 'Jimwell Raza', action: 'replied_feedback', target: 'Maria Santos', feedback: '"Can we get more practice problems?"' },
-//     { id: 10, name: 'Ailama Orpiano', action: 'deleted_feedback', target: 'Kevin Cruz', feedback: '"This app keeps crashing"' },
-//     { id: 11, name: 'Jayson Layola', action: 'edited_topic', subject: 'Data Structures and Algorithm', topic: 'Binary Search Trees' },
-//     { id: 12, name: 'Jimwell Raza', action: 'deleted_topic', subject: 'Computer Programming 1', topic: 'Loops and Iteration' },
-//     { id: 13, name: 'Jared Marinas', action: 'edited_subject', subject: 'Computer Programming 2' },
-//     { id: 14, name: 'Ailama Orpiano', action: 'deleted_subject', subject: 'Intro to Computing' },
-// ]
 
 const svg_d = [
     { action: 'deleted_question', d: 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'},
@@ -169,6 +159,9 @@ const svg_d = [
     { action: 'promoted_user', d: 'M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.28m5.94 2.28-2.28 5.941'},
     { action: 'demoted_user', d: 'M2.25 6 9 12.75l4.306-4.306a11.95 11.95 0 0 1 5.814 5.518l2.74 1.22m0 0-5.94 2.28m5.94-2.28-2.28-5.941'},
     { action: 'deleted_user', d: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm5.25 3.375h3'},
+    { action: 'added_module', d: 'M12 4.5v15m7.5-7.5h-15' },
+    { action: 'edited_module', d: 'm16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125' },
+    { action: 'deleted_module', d: 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0' },
     { action: 'added_topic', d: 'M12 4.5v15m7.5-7.5h-15'},
     { action: 'edited_topic', d: 'm16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125'},
     { action: 'deleted_topic', d: 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'},
@@ -187,6 +180,9 @@ const icon_style = [
     { action: 'promoted_user', badge: 'border-violet-400/20 bg-violet-400/10 text-violet-400'},
     { action: 'demoted_user', badge: 'border-rose-400/20 bg-rose-400/10 text-rose-400'},
     { action: 'deleted_user', badge: 'border-red-500/20 bg-red-500/10 text-red-400'},
+    { action: 'added_module', badge: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-400' },
+    { action: 'edited_module', badge: 'border-amber-400/20 bg-amber-400/10 text-amber-400' },
+    { action: 'deleted_module', badge: 'border-red-500/20 bg-red-500/10 text-red-400' },
     { action: 'added_topic', badge: 'border-sky-400/20 bg-sky-400/10 text-sky-400'},
     { action: 'edited_topic', badge: 'border-amber-400/20 bg-amber-400/10 text-amber-400'},
     { action: 'deleted_topic', badge: 'border-red-500/20 bg-red-500/10 text-red-400'},
@@ -211,15 +207,23 @@ function message(act){
         case 'deleted_question': return 'deleted a question';
         case 'edited_question': return 'edited a question';
         case 'added_question': return 'added a question';
+
         case 'promoted_user': return `promoted ${act.target} to`;
         case 'demoted_user': return `demoted ${act.target} to`;
         case 'deleted_user': return `deleted ${act.target}'s account`;
+
         case 'added_topic': return 'added a new topic';
         case 'edited_topic': return 'edited a topic';
         case 'deleted_topic': return 'deleted a topic';
+        
+        case 'added_module': return 'added a new module';
+        case 'edited_module': return 'edited a module';
+        case 'deleted_module': return 'deleted a module';
+
         case 'added_subject': return 'added a new subject';
         case 'edited_subject': return 'edited a subject';
         case 'deleted_subject': return 'deleted a subject';
+
         case 'replied_feedback': return `replied to ${act.target}'s feedback`;
         case 'deleted_feedback': return `deleted ${act.target}'s feedback`;
         default: return '';
@@ -232,19 +236,18 @@ function pillLeft(act){
         case 'deleted_question':
         case 'edited_question':
         case 'added_question':
+            return act.topic;
+        case 'added_module':
+        case 'edited_module':
+        case 'deleted_module':
+            return act.subject;
         case 'added_topic':
         case 'edited_topic':
         case 'deleted_topic':
-        case 'added_subject':
-        case 'edited_subject':
-        case 'deleted_subject':
             return act.subject;
         case 'promoted_user':
         case 'demoted_user':
             return act.from_role;
-        case 'replied_feedback':
-        case 'deleted_feedback':
-            return act.feedback;
         default:
             return null;
     }
@@ -255,13 +258,25 @@ function pillRight(act){
         case 'deleted_question':
         case 'edited_question':
         case 'added_question':
+            return act.subject;
+        case 'added_module':
+        case 'edited_module':
+        case 'deleted_module':
+            return act.module;
         case 'added_topic':
         case 'edited_topic':
         case 'deleted_topic':
             return act.topic;
+        case 'added_subject':
+        case 'edited_subject':
+        case 'deleted_subject':
+            return act.subject;
         case 'promoted_user':
         case 'demoted_user':
             return act.to_role;
+        case 'replied_feedback':
+        case 'deleted_feedback':
+            return act.feedback;
         default:
             return null;
     }

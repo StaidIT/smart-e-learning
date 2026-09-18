@@ -82,6 +82,7 @@
           <!-- QUESTION DETAILS -->
           <div
             v-if="questionData"
+            id="whiteBG"
             class="w-full flex flex-col px-6 pb-6 pt-4 gap-4 overflow-y-auto"
           >
 
@@ -195,6 +196,24 @@
 
             </div>
 
+            <!-- EXPECTED OUTPUT -->
+            <div
+              v-else-if="questionData.question_type === 'coding'"
+              class="w-full flex flex-col gap-1.5"
+            >
+
+              <span class="text-sm font-medium text-gray-700">
+                Expected Output
+              </span>
+
+              <pre
+                class="text-sm font-mono text-green-700 leading-relaxed bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 whitespace-pre-wrap break-words overflow-x-auto"
+              >{{ questionData.answer || 'N/A' }}</pre>
+
+            </div>
+            
+            
+
             <!-- UNKNOWN QUESTION TYPE -->
             <div
               v-else
@@ -209,6 +228,23 @@
                 class="text-sm font-semibold text-green-600 border border-green-400 bg-green-50 rounded-md px-3 py-2"
               >
                 {{ questionData.answer || 'N/A' }}
+              </span>
+
+            </div>
+            
+            <!-- EXPLANATION -->
+            <div v-if="questionData.question_type != 'coding'"
+              class="w-full flex flex-col gap-1.5"
+            >
+
+              <span class="text-sm font-medium text-gray-700">
+                Explanation
+              </span>
+
+              <span
+                class="text-sm text-gray-600 leading-relaxed bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 whitespace-pre-line"
+              >
+                {{ questionData.explanation }}
               </span>
 
             </div>

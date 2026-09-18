@@ -134,25 +134,44 @@ import { ref } from 'vue'
 import Toast from '../components/Toast.vue'
 
 const props = defineProps({
-    showAddSubject: { tpye: Boolean, default: false}
+    showAddSubject: {
+        type: Boolean,
+        default: false
+    }
 })
 
-const subject_name = ref('')
-const showToast = ref(false)
-const message = ref('')
+const emit = defineEmits(['close-add', 'new-subject'])
+function closeAdd(){
+    emit('close-add');
+}
 
+const subject_name = ref('')
+const message = ref('')
+const showToast = ref(false)
 const isSubmitting = ref(false)
 
 async function addSubject() {
+    if (isSubmitting.value) return
+
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
-        .getAttribute('content')
+        ?.getAttribute('content')
 
-    if(isSubmitting.value) return;
+    if (!csrfToken) {
+        message.value = 'CSRF token not found.'
+        showToast.value = true
+        return
+    }
 
-    isSubmitting.value = true;
+    if (!subject_name.value.trim()) {
+        message.value = 'Please enter a subject name.'
+        showToast.value = true
+        return
+    }
 
-    try{
+    isSubmitting.value = true
+
+    try {
         const response = await fetch('/addSubject', {
             method: 'POST',
             headers: {
@@ -161,35 +180,42 @@ async function addSubject() {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                subject_name: subject_name.value
+                subject_name: subject_name.value.trim()
             })
         })
 
         const data = await response.json()
 
-        if (data.success) {
-            const addSubjectModal = document.getElementById('addSubject')
+        if (!response.ok) {
+            message.value = data.message || 'Failed to add subject.'
+            showToast.value = true
+            return
+        }
 
-            if (addSubjectModal) {
-                addSubjectModal.style.display = 'none'
-            }
+        if (data.success && data.subject) {
+            message.value = data.message || 'Subject added successfully.'
+            showToast.value = true
 
             subject_name.value = ''
-            message.value = data.message
-            showToast.value = true
-            emit('close-add')
-        }
-    }finally{
-        isSubmitting.value = false;
-    }
-}
 
-const emit = defineEmits(['close-add'])
-function closeAdd(){
-    emit('close-add')
+            emit('new-subject', data.subject)
+            emit('close-add')
+        } else {
+            message.value = data.message || 'Failed to add subject.'
+            showToast.value = true
+        }
+    } catch (error) {
+        console.error(error)
+
+        message.value = 'Something went wrong while adding the subject.'
+        showToast.value = true
+    } finally {
+        isSubmitting.value = false
+    }
 }
 </script>
 
+<!-- ------------------------------------------------------------------------------------------------------------------------------------------------  -->
 
 <style scoped>
 

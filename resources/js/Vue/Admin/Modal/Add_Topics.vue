@@ -1,7 +1,6 @@
 <template>
 
     <Transition name="modal-fade">
-
         <div
             v-if="showAddTopic"
             id="addTopic"
@@ -9,21 +8,18 @@
         >
 
             <Transition name="modal-pop" appear>
-
                 <form
-                    @submit.prevent="addTopic(subjectName)"
+                    @submit.prevent="addTopic"
                     class="relative w-[30%] min-w-[380px] max-w-[440px] bg-white rounded-2xl shadow-2xl shadow-black/30 ring-1 ring-black/5 flex flex-col p-6 gap-5"
                 >
 
                     <!-- CLOSE BUTTON -->
-
                     <button
                         type="button"
                         @click="closeModal"
                         aria-label="Close"
                         class="absolute right-4 top-4 p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
                     >
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -32,20 +28,16 @@
                             stroke="currentColor"
                             class="size-5"
                         >
-
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 d="M6 18 18 6M6 6l12 12"
                             />
-
                         </svg>
-
                     </button>
 
 
                     <!-- HEADER -->
-
                     <div class="w-full flex items-start gap-3 pr-6">
 
                         <div class="shrink-0 w-10 h-10 rounded-lg bg-[#8B5CF6]/10 flex items-center justify-center">
@@ -58,13 +50,11 @@
                                 stroke="#8B5CF6"
                                 class="size-5"
                             >
-
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     d="M12 4.5v15m7.5-7.5h-15"
                                 />
-
                             </svg>
 
                         </div>
@@ -76,7 +66,7 @@
                             </span>
 
                             <span class="text-sm text-gray-500">
-                                Create a new topic for this subject.
+                                Create a new topic for this module.
                             </span>
 
                         </div>
@@ -84,23 +74,21 @@
                     </div>
 
 
-                    <!-- SUBJECT -->
-
+                    <!-- MODULE -->
                     <div class="w-full flex items-center gap-2">
 
                         <span class="text-sm font-medium text-gray-700">
-                            Subject
+                            Module
                         </span>
 
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#8B5CF6]/10 text-[#6D28D9]">
-                            {{ subjectName }}
+                            {{ moduleName }}
                         </span>
 
                     </div>
 
 
                     <!-- TOPIC -->
-
                     <div class="w-full flex flex-col gap-1.5">
 
                         <label
@@ -113,7 +101,7 @@
                         <input
                             id="topic"
                             type="text"
-                            placeholder="e.g. Recursion and Backtracking"
+                            placeholder="e.g. Set Operations"
                             v-model="topic_name"
                             autocomplete="off"
                             class="w-full px-3 py-2.5 text-sm outline-none border border-gray-300 bg-gray-50 rounded-lg
@@ -124,14 +112,13 @@
 
                         <input
                             type="hidden"
-                            v-model="subject_id"
+                            v-model="module_id"
                         >
 
                     </div>
 
 
                     <!-- BUTTONS -->
-
                     <div class="w-full flex gap-3 mt-1">
 
                         <button
@@ -143,7 +130,6 @@
                             Cancel
                         </button>
 
-
                         <button
                             type="submit"
                             :disabled="!topic_name.trim() || isSubmitting"
@@ -154,11 +140,29 @@
                                 flex items-center justify-center gap-1.5"
                         >
 
+                            <svg
+                                v-if="isSubmitting"
+                                class="animate-spin size-4"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    class="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    stroke-width="4"
+                                ></circle>
 
-                            <svg v-if="isSubmitting" class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+                                <path
+                                    class="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"
+                                ></path>
                             </svg>
+
                             {{ isSubmitting ? 'Adding...' : 'Add Topic' }}
 
                         </button>
@@ -166,12 +170,11 @@
                     </div>
 
                 </form>
-
             </Transition>
 
         </div>
-
     </Transition>
+
 
     <Toast
         :show="showToast"
@@ -188,48 +191,52 @@ import { ref, watch } from 'vue'
 import Toast from '../components/Toast.vue'
 
 const props = defineProps({
+
     showAddTopic: {
         type: Boolean,
         default: false
     },
-    subjectId: {
+
+    moduleId: {
         type: [Number, String],
         default: null
     },
-    subjectName: {
+
+    moduleName: {
         type: String,
         default: ''
     }
+
 })
 
 const emit = defineEmits([
-    'close'
+    'close',
+    'new_topics'
 ])
 
+
 const topic_name = ref('')
-const subject_id = ref(null)
+const module_id = ref(null)
+
 const showToast = ref(false)
 const message = ref('')
-
 const isSubmitting = ref(false)
 
+
 watch(
-    () => props.subjectId,
+    () => props.moduleId,
     (newValue) => {
-        subject_id.value = newValue
+        module_id.value = newValue
     },
     { immediate: true }
 )
-
 
 function closeModal() {
     topic_name.value = ''
     emit('close')
 }
 
-
-async function addTopic(Sname) {
-
+async function addTopic() {
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         .getAttribute('content')
@@ -238,8 +245,9 @@ async function addTopic(Sname) {
         return
     }
 
-    if(isSubmitting.value) return;
-
+    if (isSubmitting.value) {
+        return
+    }
     isSubmitting.value = true
 
     try {
@@ -251,22 +259,23 @@ async function addTopic(Sname) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                subject_id: subject_id.value,
-                topic_name: topic_name.value,
-                subject_name: Sname
+
+                module_id: module_id.value,
+                topic_name: topic_name.value
+
             })
-        });
+        })
 
         const data = await response.json()
 
         if (data.success) {
             topic_name.value = ''
-            showToast.value= true
+            showToast.value = true
             message.value = data.message
             emit('close')
+            emit('new_topics', data.new_topics)
         }
-
-    } finally{
+    } finally {
         isSubmitting.value = false
     }
 

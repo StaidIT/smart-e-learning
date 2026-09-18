@@ -3,7 +3,7 @@
         class="w-full flex items-center justify-between gap-2 sticky top-0 border-[1.5px] border-[#CECBF6]/15 bg-[#CECBF6]/6 backdrop-blur-sm z-10 font-semibold text-white py-2.5 px-3 sm:py-3 sm:px-4"
     >
         <ul class="flex-1 min-w-0 flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hidden">
-            <li v-for="link in links" :key="link.id" class="shrink-0">
+            <li v-for="link in localSubject" :key="link.id" class="shrink-0">
                 <a
                     :href="`#${link.slug}`"
                     @click.prevent="scrollToSection(link.slug)"
@@ -53,14 +53,13 @@
     <Add_Subject
     :show-add-subject="addSubject"
     @close-add="closeAdd"
+    @new-subject="handleNewSubjects"
     />
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import Add_Subject from '../Modal/Add_Subject.vue'
-
-const activeSection = ref('discrete-mathematics')
 
 const props = defineProps({
     subjects: {
@@ -68,14 +67,41 @@ const props = defineProps({
         required: true
     }
 })
-const links = props.subjects
 
+const emit = defineEmits(['subject-added'])
+
+const activeSection = ref('discrete-mathematics')
+const localSubject = ref([...props.subjects])
 const addSubject = ref(false)
 
-let observer
+let observer = null
 let isClickScrolling = false
 let scrollEndTimer = null
 let closeButtons = []
+
+function handleNewSubjects(newSubject) {
+    if (!newSubject) return
+
+    const exists = localSubject.value.some(
+        subject => String(subject.id) === String(newSubject.id)
+    )
+
+    if (!exists) {
+        localSubject.value.push(newSubject)
+    }
+
+    emit('subject-added', newSubject)
+
+    nextTick(() => {
+        observeSections()
+
+        if (newSubject.slug) {
+            setTimeout(() => {
+                scrollToSection(newSubject.slug)
+            }, 100)
+        }
+    })
+}
 
 function getScrollParent() {
     return document.querySelector('main.overflow-y-auto') || document.documentElement
@@ -114,12 +140,14 @@ function scrollToSection(slug) {
     }, 600)
 }
 
-onMounted(() => {
+function observeSections() {
+    observer?.disconnect()
+
     observer = new IntersectionObserver(
-        (entries) => {
+        entries => {
             if (isClickScrolling) return
 
-            entries.forEach((entry) => {
+            entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     activeSection.value = entry.target.id
                 }
@@ -132,12 +160,26 @@ onMounted(() => {
         }
     )
 
-    links.forEach((link) => {
-        const section = document.getElementById(link.slug)
+    localSubject.value.forEach(subject => {
+        const section = document.getElementById(subject.slug)
 
         if (section) {
             observer.observe(section)
         }
+    })
+}
+
+function addSubjectOpen() {
+    addSubject.value = true
+}
+
+function closeAdd() {
+    addSubject.value = false
+}
+
+onMounted(() => {
+    nextTick(() => {
+        observeSections()
     })
 })
 
@@ -146,21 +188,12 @@ onBeforeUnmount(() => {
 
     clearTimeout(scrollEndTimer)
 
-    closeButtons.forEach((sClose) => {
-        sClose.replaceWith(sClose.cloneNode(true))
+    closeButtons.forEach(button => {
+        button.replaceWith(button.cloneNode(true))
     })
 
     closeButtons = []
 })
-
-function addSubjectOpen() {
-    addSubject.value = true
-}
-
-function closeAdd(){
-    addSubject.value = false
-}
-
 </script>
 
 <style scoped>

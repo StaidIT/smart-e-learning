@@ -74,13 +74,13 @@
 
             <div class="flex items-center gap-2">
                 <span class="text-sm font-semibold text-gray-300">
-                    Topic
+                    Module
                 </span>
 
                 <span
                     class="text-sm text-[#CECBF6] bg-[#CECBF6]/10 border border-[#CECBF6]/20 px-2.5 py-0.5 rounded-full"
                 >
-                    {{ topic_name }}
+                    {{ module_name }}
                 </span>
             </div>
         </div>
@@ -134,7 +134,8 @@
                                 {{ 
                                   question.question_type === 'multipleChoice' ? 'Multiple Choice' : '' || 
                                   question.question_type === 'TorF' ? 'True or False' : '' || 
-                                  question.question_type === 'identification' ? 'Identification' : '' 
+                                  question.question_type === 'identification' ? 'Identification' : '' ||
+                                  question.question_type === 'coding' ? 'Coding' : ''
                                 }}
                             </span>
                         </span>
@@ -237,10 +238,11 @@
     <!-- ADD QUESTION MODAL -->
     <Add_Question
         :show-add-question="showAddQuestion"
-        :topic-name="topic_name"
+        :module-name="module_name"
         :subject-name="subjectName"
         @close-add="closeAddQuestionModal"
-        :topic-id="props.topicId"
+        @questions-added="questionsAdded"
+        :module-id="props.moduleId"
     />
 
     <!-- EDIT QUESTION MODAL -->
@@ -248,7 +250,7 @@
         :show-edit-question="showEditQuestion"
         :question-data="question"
         :choices-data="q_choices"
-        :topic-name="topic_name"
+        :module-name="module_name"
         :subject-name="subjectName"
         @close-edit="closeEditQuestionModal"
         @question-updated="updateQuestionInTable"
@@ -258,9 +260,10 @@
     <Delete_Question
         :show-delete-question="showDeleteQuestion"
         :subject-name="subjectName"
-        :topic-name="topic_name"
+        :topic-name="module_name"
         :question-data="delete_question"
         @close-delete="closeDeleteQuestionModal"
+        @question-deleted="questionsDeleted"
     />
 </template>
 
@@ -274,11 +277,11 @@ import Add_Question from '../../Modal/Add_Question.vue';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-    topicId: { type: Number, default: 1 },
+    moduleId: { type: String, required: true },
     subjectName: { type: String, default: '' },
     subjects: { type: Array, required: true },
     questions: { type: Array, required: true },
-    topics: { type: Array, required: true },
+    modules: { type: Array, required: true },
     choices: { type: Array, required: true }
 });
 
@@ -296,6 +299,30 @@ const delete_question = ref(null);
 
 const localQuestions = ref([...props.questions]);
 
+function questionsAdded(newQuestions) {
+    if (!Array.isArray(newQuestions)) {
+        return;
+    }
+
+    const existingIds = new Set(
+        localQuestions.value.map(q => q.id)
+    );
+
+    const questionsToAdd = newQuestions.filter(
+        q => !existingIds.has(q.id)
+    );
+
+    localQuestions.value.push(...questionsToAdd);
+}
+
+function questionsDeleted(newQuestions) {
+    if (!Array.isArray(newQuestions)) {
+        return;
+    }
+
+    localQuestions.value = newQuestions;
+}
+
 const q_choices = ref({
     choice_A: '',
     choice_B: '',
@@ -303,14 +330,14 @@ const q_choices = ref({
     choice_D: ''
 });
 
-const topic_name = computed(() => {
-    if (props.topicId === 0) {
+const module_name = computed(() => {
+    if (String(props.moduleId) === '0') {
         return 'All';
     }
 
-    return props.topics.find(
-        t => t.id === props.topicId
-    )?.topic_name || 'N/A';
+    return props.modules.find(
+        t => String(t.id) === String(props.moduleId)
+    )?.module_name || 'N/A';
 });
 
 const subject_id = computed(() => {
@@ -319,21 +346,21 @@ const subject_id = computed(() => {
     )?.id || 0;
 });
 
-const topic_ids = computed(() => {
-    return props.topics
+const module_ids = computed(() => {
+    return props.modules
         .filter(t => t.subject_id === subject_id.value)
         .map(t => t.id);
 });
 
 const filteredQuestions = computed(() => {
-    if (props.topicId === 0) {
+    if (String(props.moduleId) === '0') {
         return localQuestions.value.filter(q =>
-            topic_ids.value.includes(q.topic_id)
+            module_ids.value.some(id => String(id) === String(q.module_id))
         );
     }
 
     return localQuestions.value.filter(q =>
-        q.topic_id === props.topicId
+        String(q.module_id) === String(props.moduleId)
     );
 });
 
@@ -351,7 +378,7 @@ function openViewModal(question) {
             choice_D: choice?.choice_D
         },
         subject: props.subjectName,
-        topic: topic_name.value
+        module: module_name.value
     };
 
     view_question.value = true;
@@ -437,4 +464,6 @@ function closeDeleteQuestionModal() {
     showDeleteQuestion.value = false;
     delete_question.value = null;
 }
+
+
 </script>

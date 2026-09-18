@@ -3,50 +3,58 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
 
 class CompilerController extends Controller
 {
-    // 1. This method was missing. It loads your compiler.blade.php view.
     public function index()
     {
         return view('compiler');
     }
 
-    // 2. This method handles the code execution via JDoodle.
     public function run(Request $request)
     {
         $request->validate([
-            'code' => 'required|string',
-            'language' => 'required|string'
+            'code' => ['required', 'string', 'max:10000'],
         ]);
 
-        $jdoodleMap = [
-            'java' => ['language' => 'java', 'versionIndex' => '4'],
-            'python' => ['language' => 'python3', 'versionIndex' => '3'],
-            'csharp' => ['language' => 'csharp', 'versionIndex' => '4']
-        ];
+        $id = uniqid('java_', true);
 
-        $langConfig = $jdoodleMap[$request->language] ?? $jdoodleMap['python'];
+        $workDir = storage_path("app/compiler/$id");
 
-        $response = Http::post('https://api.jdoodle.com/v1/execute', [
-            'clientId' => env('JDOODLE_CLIENT_ID'),
-            'clientSecret' => env('JDOODLE_CLIENT_SECRET'),
-            'script' => $request->code,
-            'language' => $langConfig['language'],
-            'versionIndex' => $langConfig['versionIndex']
-        ]);
+        File::makeDirectory($workDir, 0755, true);
 
-        if ($response->successful()) {
-            $result = $response->json();
-            
+        File::put("$workDir/Main.java", $request->input('code'));
+
+        $projectPath = str_replace('\\', '/', base_path());
+
+        $command = 'docker run --rm ' .
+            '--network none ' .
+            '--memory 256m ' .
+            '--cpus 0.5 ' .
+            '-v "' . $projectPath . '/storage/app/compiler/' . $id . ':/app" ' .
+            'smart-elearning-java:21 ' .
+            'sh -c "javac Main.java && timeout 5 java Main"';
+
+        $output = [];
+        $exitCode = 0;
+
+        exec($command . ' 2>&1', $output, $exitCode);
+
+        $result = implode("\n", $output);
+
+        File::deleteDirectory($workDir);
+
+        if ($exitCode === 0) {
             return response()->json([
-                'output' => $result['output'] ?? 'Execution completed with no output.'
+                'success' => true,
+                'output' => $result,
             ]);
         }
 
         return response()->json([
-            'error' => 'API Error (' . $response->status() . '): ' . $response->body()
-        ], $response->status());
+            'success' => false,
+            'output' => $result,
+        ]);
     }
 }

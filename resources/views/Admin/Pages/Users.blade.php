@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Users | Smart E-Learning</title>
-    <link rel="shortcut icon" href="{{ asset('images/Components/Logo.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('images/Components/Favicon.png') }}" type="image/x-icon">
+    @vite(['resources/css/app.css'])
 </head>
 <body class="h-screen w-screen bg-gray-50 overflow-hidden">
 
@@ -27,7 +28,7 @@
                     <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[#8B5CF6]/10 blur-2xl"></div>
 
                     <div class="flex flex-col justify-center text-white relative">
-                        <span class="text-2xl font-bold">1000</span>
+                        <span class="text-2xl font-bold">{{$users->count()}}</span>
                         <span class="text-gray-400 text-xs font-semibold tracking-wide">TOTAL USERS</span>
                     </div>
                     <div class="w-9 h-9 shrink-0 bg-[#8B5CF6]/15 border border-[#CECBF6]/15 text-[#CECBF6] flex items-center justify-center rounded-md relative transition-transform duration-200 group-hover:scale-105">
@@ -42,7 +43,7 @@
                     <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-[#E04A4A]/10 blur-2xl"></div>
 
                     <div class="flex flex-col justify-center text-white relative">
-                        <span class="text-2xl font-bold">4</span>
+                        <span class="text-2xl font-bold">{{$users->where('role', 'Admin')->count()}}</span>
                         <span class="text-gray-400 text-xs font-semibold tracking-wide">TOTAL ADMINS</span>
                     </div>
                     <div class="w-9 h-9 shrink-0 bg-[#E04A4A]/15 border border-[#CECBF6]/15 text-[#F09595] flex items-center justify-center rounded-md relative transition-transform duration-200 group-hover:scale-105">
@@ -57,7 +58,7 @@
                     <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-emerald-400/10 blur-2xl"></div>
 
                     <div class="flex flex-col justify-center text-white relative">
-                        <span class="text-2xl font-bold">996</span>
+                        <span class="text-2xl font-bold">{{$users->where('role', 'Student')->count()}}</span>
                         <span class="text-gray-400 text-xs font-semibold tracking-wide">TOTAL STUDENTS</span>
                     </div>
                     <div class="w-9 h-9 shrink-0 bg-emerald-400/15 border border-[#CECBF6]/15 text-emerald-300 flex items-center justify-center rounded-md relative transition-transform duration-200 group-hover:scale-105">
@@ -76,7 +77,7 @@
 
     </div>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite([ 'resources/js/app.js'])
     
 </body>
 </html>

@@ -53,3 +53,22 @@ html {
     scrollbar-width: thin;
     scrollbar-color: #4C1D95 #090014;
 }
+
+#whiteBG::-webkit-scrollbar {
+    width: 6px;
+}
+#whiteBG::-webkit-scrollbar-track {
+    background: transparent;
+}
+#whiteBG::-webkit-scrollbar-thumb {
+    background-color: #E9D5FF;
+    border-radius: 9999px;
+}
+#whiteBG::-webkit-scrollbar-thumb:hover {
+    background-color: #8B5CF6; 
+}
+
+#whiteBG {
+    scrollbar-width: thin;
+    scrollbar-color: #bc9dde transparent;
+}

@@ -7,13 +7,8 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                // GLOBAL - CSS
-                'resources/css/app.css', 
-
-                // GLOBAL - JS
+                'resources/css/app.css',
                 'resources/js/app.js',
-
-                
             ],
             refresh: true,
         }),
@@ -26,6 +21,8 @@ export default defineConfig({
         }
     },
     server: {
+        host: '127.0.0.1',
+        cors: true,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
@@ -34,5 +31,12 @@ export default defineConfig({
         outDir: 'public/build',
         emptyOutDir: true,
         manifest: 'manifest.json',
+
+        rollupOptions: {
+            input: {
+                app: 'resources/js/app.js',
+                monacoWorker: 'resources/js/monaco.worker.js',
+            },
+        },
     },
 })

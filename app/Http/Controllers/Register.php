@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\MailerService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -18,6 +19,12 @@ class Register extends Controller
             'password' => 'required|min:8|confirmed'
         ]);
 
+        $profile_colors = [
+            'bg-green-600 text-white',
+            'bg-purple-800 text-white',
+            'bg-blue-600 text-white'
+        ];
+
         $otp_code = rand(100000, 999999);
         $id_number = random_int(100000000, 999999999);
 
@@ -26,6 +33,7 @@ class Register extends Controller
             'name' => $validated_data['name'],
             'email' => $validated_data['email'],
             'password' => Hash::make($validated_data['password']),
+            'profile_color' => Arr::random($profile_colors),
             'otp_verification' => $otp_code,
             'otp_expiration' => Carbon::now()->addMinutes(10),
             'last_seen' => Carbon::now()

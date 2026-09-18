@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Choices;
+use App\Models\Modules;
 use App\Models\Questions;
 use App\Models\RecentActivity;
 use Carbon\Carbon;
@@ -19,8 +20,9 @@ class Question extends Controller
     {
         $input = $request->validate([
             'question' => 'required|string|max:6000',
-            'question_type' => 'required|string|in:multipleChoice,TorF,identification',
-            'topic_id' => 'required|integer|exists:topics,id',
+            'explanation' => 'exclude_if:question_type,coding|string|max:6000',
+            'question_type' => 'required|string|in:multipleChoice,TorF,identification,coding',
+            'module_id' => 'required|uuid|exists:modules,id',
 
             'choice_A' => 'required_if:question_type,multipleChoice|nullable|string|max:2000',
             'choice_B' => 'required_if:question_type,multipleChoice|nullable|string|max:2000',
@@ -47,10 +49,11 @@ class Question extends Controller
             }
 
             $question = Questions::create([
-                'topic_id' => $input['topic_id'],
+                'module_id' => $input['module_id'],
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
                 'answer' => $correct_answer,
+                'explanation' => $input['explanation']
             ]);
 
             Choices::create([
@@ -61,35 +64,68 @@ class Question extends Controller
                 'choice_D' => $input['choice_D'],
             ]);
 
+            Modules::where('id', $input['module_id'])
+            ->update([
+                'has_question_type' => true
+            ]);
+
         } elseif($input['question_type'] === 'TorF') {
             Questions::create([
-                'topic_id' => $input['topic_id'],
+                'module_id' => $input['module_id'],
+                'question' => $input['question'],
+                'question_type' => $input['question_type'],
+                'answer' => $input['correct_answer'],
+                'explanation' => $input['explanation']
+            ]);
+
+            Modules::where('id', $input['module_id'])
+            ->update([
+                'has_question_type' => true
+            ]);
+
+        }elseif($input['question_type'] === 'identification'){
+            Questions::create([
+                'module_id' => $input['module_id'],
+                'question' => $input['question'],
+                'question_type' => $input['question_type'],
+                'answer' => $input['correct_answer'],
+                'explanation' => $input['explanation']
+            ]);
+
+            Modules::where('id', $input['module_id'])
+            ->update([
+                'has_question_type' => true
+            ]);
+
+        }elseif($input['question_type'] === 'coding'){
+            Questions::create([
+                'module_id' => $input['module_id'],
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
                 'answer' => $input['correct_answer'],
             ]);
-        }elseif($input['question_type'] === 'identification'){
-            Questions::create([
-                'topic_id' => $input['topic_id'],
-                'question' => $input['question'],
-                'question_type' => $input['question_type'],
-                'answer' => $input['correct_answer'],
+
+            Modules::where('id', $input['module_id'])
+            ->update([
+                'has_coding' => true
             ]);
         }   
 
-        $questions = Questions::where('topic_id', $input['topic_id'])->select('id', 'question', 'question_type', 'answer')->get();
+        $questions = Questions::where('module_id', $input['module_id'])
+        ->select('id', 'module_id', 'question', 'question_type', 'answer')
+        ->get();
 
         RecentActivity::create([
             'name' => auth()->user()->name,
             'action' => 'added_question',
             'subject' => $request->subject_name,
-            'topic' => $request->topic_name
+            'module' => $request->module_name
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Question added successfully!',
-            'questions' => $questions
+            'new_questions' => $questions,
         ]);
 
 
@@ -158,7 +194,7 @@ class Question extends Controller
             'name' => auth()->user()->name,
             'action' => 'edited_question',
             'subject' => $request->subject_name,
-            'topic' => $request->topic_name
+            'module' => $request->module_name
         ]);
 
         return response()->json([
@@ -171,17 +207,10 @@ class Question extends Controller
 
     public function deleteQuestion(Request $request){
         $data = $request->validate([
-            'question_id' => 'required|integer'
+            'question_id' => 'required|uuid'
         ]);
 
         $question = Questions::find($data['question_id']);
-
-        RecentActivity::create([
-            'name' => auth()->user()->name,
-            'action' => 'deleted_question',
-            'subject' => $request->subject_name,
-            'topic' => $request->topic_name
-        ]);
 
         if(!$question){
             return response()->json([
@@ -189,10 +218,49 @@ class Question extends Controller
             ], 404);
         }
 
+        $module_id = $question->module_id;
+        $question_type = $question->question_type;
+
+        RecentActivity::create([
+            'name' => auth()->user()->name,
+            'action' => 'deleted_question',
+            'subject' => $request->subject_name,
+            'module' => $request->module_name
+        ]);
+
         $question->delete();
+
+        if($question_type === 'coding'){
+            $hasCoding = Questions::where('module_id', $module_id)
+                ->where('question_type', 'coding')
+                ->exists();
+
+            Modules::where('id', $module_id)
+                ->update([
+                    'has_coding' => $hasCoding
+                ]);
+        }else{
+            $hasQuestionType = Questions::where('module_id', $module_id)
+                ->whereIn('question_type', [
+                    'multipleChoice',
+                    'identification',
+                    'TorF'
+                ])
+                ->exists();
+                Modules::where('id', $module_id)
+                ->update([
+                    'has_question_type' => $hasQuestionType
+                ]);
+        }
+
+        $questions = Questions::where('module_id', $module_id)->get();
+
         return response()->json([
             'success' => true,
-            'message' => 'Question Deleted Successfully!'
+            'message' => 'Question Deleted Successfully!',
+            'questions' => $questions
         ]);
     }
+
+
 }

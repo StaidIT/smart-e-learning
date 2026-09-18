@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Verification | Smart E-Learning</title>
-    <link rel="shortcut icon" href="{{ asset('images/Components/Logo.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('images/Components/Favicon.png') }}" type="image/x-icon">
+    @vite('resources/css/app.css')
     <style>
         body {
             background: linear-gradient(135deg, #090014 0%, #1A0B2E 50%, #4C1D95 100%);
@@ -203,7 +204,7 @@
 
 
     {{-- @include('Hidden_Forms.Resend_OTP') --}}
-    @vite(['resources/css/app.css', 'resources/js/Auth.js'])
+    @vite(['resources/js/Auth.js'])
 
     
 </body>
