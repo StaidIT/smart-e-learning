@@ -22,7 +22,6 @@ use App\Models\Topics;
 use App\Models\User;
 use App\Models\UserPretest;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CompilerController;
 
 
 Route::post('/compiler/run', [CompilerController::class, 'run']);
