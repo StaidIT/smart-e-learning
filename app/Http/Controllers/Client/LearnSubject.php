@@ -26,7 +26,7 @@ class LearnSubject extends Controller
 
         if ($subject->subject_name === 'Discrete Mathematics') {
 
-            return view('Client.Review_Pages.Discrete_Mathematics.Main', compact(
+            return view('Client.Review_Pages.Discrete_Mathematics.Discrete_Mathematics', compact(
                 'subject_name',
                 'modules',
                 'topics'

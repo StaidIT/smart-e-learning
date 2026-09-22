@@ -12,12 +12,12 @@
     <div id="app" class="h-full">
 
 
-        <navigation
+        <left-navigation
             active-page="Subjects"
             :id-number="{{ auth()->user()->id_number }}"
             user-name="{{ auth()->user()->name }}"
             user-email="{{ auth()->user()->email }}"
-        ></navigation>
+        ></left-navigation>
 
         <main
             class="w-full h-full main-bg md:w-[calc(100%-280px)] flex flex-col md:ml-[280px] ml-0 p-5 overflow-y-auto overflow-hidden scrollbar-thin scroll-smooth"

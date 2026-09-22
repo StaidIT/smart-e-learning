@@ -75,7 +75,7 @@
                 <p class="text-gray-500 mt-1.5 text-center leading-snug px-2
                           mb-[clamp(0.5rem,1.5dvh,1rem)]"
                    style="font-size:clamp(0.62rem,1.4dvh,0.75rem)">
-                    Your OTP code has been sent to <b class="text-gray-700">example@gmail.com</b>.
+                    Your OTP code has been sent to <b class="text-gray-700">{{$email}}</b>.
                     Enter the OTP code to verify your account.
                 </p>
 
@@ -155,7 +155,7 @@
                 <h4 class="font-bold m-0 text-[#090014] tracking-wide text-center"
                     style="font-size:clamp(1.2rem,2.2vw,1.50rem)">ACCOUNT VERIFICATION</h4>
                 <p class="text-gray-500 mt-1.5 mb-[clamp(1rem,3vh,2rem)] text-sm text-center px-4 leading-relaxed">
-                    Your OTP code has been sent to <b class="text-gray-700">example@gmail.com</b>.
+                    Your OTP code has been sent to <b class="text-gray-700">{{$email}}</b>.
                     Enter the OTP code to verify your account.
                 </p>
 

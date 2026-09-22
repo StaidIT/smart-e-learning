@@ -24,8 +24,6 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->enum('status', ['current', 'passed', 'locked'])
                 ->default('locked');
-            // $table->Boolean('has_coding')->default(false);
-            // $table->Boolean('has_question_type')->default(false);
             $table->Boolean('coding_passed')->default(false);
             $table->Boolean('questions_type_passed')->default(false);
             $table->integer('scored')->default(0);

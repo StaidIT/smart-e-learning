@@ -3,7 +3,7 @@
 
         <div class="w-full mb-6">
             <h2 class="text-gray-900 font-bold text-lg">{{ subjectName }}</h2>
-            <p class="text-gray-400 text-sm">{{ topicName }}</p>
+            <p class="text-gray-400 text-sm">{{ moduleName }}</p>
         </div>
 
         <span :class="['inline-block px-3 py-1 rounded-full text-xs font-semibold mb-8', badgeBg, badgeText]">
@@ -49,7 +49,7 @@
 
             <a
                 v-if="status === 'Failed'"
-                :href="`/takingPretest/${subjectId}/${topicId}/${url(topicName)}`"
+                :href="`/takingPretest/${subjectId}/${moduleId}/${url(moduleName)}`"
                 class="inline-flex items-center gap-1.5 bg-[#4C1D95] text-white font-semibold text-sm px-8 py-3 rounded-lg shadow-sm hover:bg-[#3b1575] hover:shadow-md active:scale-[0.98] transition-all"
             >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -81,9 +81,9 @@ function url(url_name) {
 
 const props = defineProps({
     subjectName: { type: String, required: true },
-    topicName: { type: String, required: true },
-    subjectId: { type: Number, required: true },
-    topicId: { type: Number, required: true },
+    moduleName: { type: String, required: true },
+    subjectId: { type: String, required: true },
+    moduleId: { type: String, required: true },
     scorePercent: { type: Number, required: true },
     message: { type: String, required: true },
     status: { type: String, required: true },

@@ -19,7 +19,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->text('question');
             $table->enum('question_type',['TorF', 'multipleChoice', 'identification', 'coding']);
-            $table->text('answer');
+            $table->text('answer')->nullable();
             $table->text('explanation')->nullable();
             $table->integer('points')->default(1);
             $table->timestamps();

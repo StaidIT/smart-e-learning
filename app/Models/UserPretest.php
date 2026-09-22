@@ -12,8 +12,8 @@ class UserPretest extends Model
         'subject_id',
         'module_id',
         'status',
-        'has_question_type',
-        'has_coding',
+        'questions_type_passed',
+        'coding_passed',
         'scored',
         'updated_at'
     ];

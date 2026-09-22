@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Client\CodePretestController;
 use App\Http\Controllers\Client\LearnSubject;
 use App\Http\Controllers\Client\Pretest;
 use App\Http\Controllers\CompilerController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Login;
 use App\Http\Controllers\Logout;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\Pages\QuestionsPage;
+use App\Http\Controllers\PracticeCompilerController;
 use App\Http\Controllers\Question;
 use App\Http\Controllers\QuestionImport;
 use App\Http\Controllers\Register;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Subject;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerifyOTP;
+use App\Models\Leaderboard;
 use App\Models\Modules;
 use App\Models\Questions;
 use App\Models\RecentActivity;
@@ -22,10 +25,9 @@ use App\Models\Topics;
 use App\Models\User;
 use App\Models\UserPretest;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CompilerController;
 
 
-Route::post('/compiler/run', [CompilerController::class, 'run']);
+
 
 
 Route::middleware(['guest'])->group(function(){
@@ -40,11 +42,13 @@ Route::middleware(['guest'])->group(function(){
     Route::get('/account_verification', function(){
 
         $otp_session = session('otp_session');
+        
         if(!$otp_session){
             return redirect()->route('login');
         }
 
-        return view('Auth.Account_Verification');
+        $email = User::where('id', $otp_session['user_id'])->value('email');
+        return view('Auth.Account_Verification', compact('email'));
     })->name('account_verification');
 
 
@@ -56,6 +60,12 @@ Route::middleware(['guest'])->group(function(){
 
 
 
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::post('/compiler/runPretest', [CompilerController::class, 'runPretest']);
+//     Route::post('/compiler/save', [CompilerController::class, 'save']);
+// });
+
+
 // CLIENT ------------------------------------------------------------------------------------------------------------------------------------------------
 // CLIENT ------------------------------------------------------------------------------------------------------------------------------------------------
 // CLIENT ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -64,18 +74,27 @@ Route::middleware(['auth'])->group(function(){
     // ===========================================================
     // ===========================================================
     Route::get('/home', function () {
-        // Auth::logout();
-        // request()->session()->invalidate();
-        // request()->session()->regenerateToken();
         $subjects = Subjects::all();
         $modules = Modules::all();
         $questions = Questions::all();
         $user_pretests = UserPretest::where('user_id', auth()->user()->id)->get();
+
+
+        $leaderboard = Leaderboard::orderBy('points', 'DESC')
+            ->take(20)
+            ->get();
+
+        $users = User::whereIn('id', $leaderboard->pluck('user_id'))
+            ->select('id', 'name', 'profile_color', 'profile_picture')
+            ->get()
+            ->keyBy('id');
         return view('Client.Pages.Home', compact(
             'subjects',
             'modules',
             'questions',
-            'user_pretests'
+            'user_pretests',
+            'leaderboard',
+            'users'
         ));
     })->name('home');
 
@@ -94,19 +113,22 @@ Route::middleware(['auth'])->group(function(){
         return view('Client.Pages.Quiz_Pages.DM');
     })->name('discrete_quiz');
 
-    Route::get('/code', function(){
-        return view('Client.Pages.Pretest_code');
-    });
-
 
     // ===========================================================
     // ===========================================================
 
     Route::get('/learn/{subject_name}/{subject_id}', [LearnSubject::class, 'subjectLearn']);
-    Route::get('/result/{subject_name}/{subject_id}/{topic_name}/{topic_id}', [Pretest::class, 'resultPretest']);
+    Route::get('/result/{type}/{subject_name}/{subject_id}/{module_name}/{module_id}', [Pretest::class, 'resultPretest']);
+
     Route::post('/submitAnswer', [Pretest::class, 'submitAnswer']);
+    Route::post('/submitCode', [CodePretestController::class, 'submitCodeAnswer']);
+
     Route::get('/pretest/{subject_name}/{subject_id}', [Pretest::class, 'pretestModules']);
-    Route::get('/takingPretest/{subject_name}/{subject_id}/{module_name}/{module_id}', [Pretest::class, 'takingPretest']);
+    Route::get('/takingPretest/{to_take}/{subject_name}/{subject_id}/{module_name}/{module_id}', [Pretest::class, 'takingPretest'])->name('pretest.taking');
+
+    Route::post('/practice-compiler/run', [PracticeCompilerController::class, 'run']);
+    Route::post('/compiler/runPretest', [CompilerController::class, 'runPretest']);
+    Route::post('/saveCode', [CompilerController::class, 'save']);
 
     Route::post('/logout_student', [Logout::class, 'logout']);
 
@@ -138,7 +160,7 @@ Route::middleware(['auth','Admin'])->group(function(){
     // ===========================================================
     // ===========================================================
     Route::get('/users', function(){
-        $users = User::select('id','id_number', 'name', 'email','role', 'status')->get();
+        $users = User::select('id','id_number', 'name', 'email','role', 'status','profile_color', 'profile_picture')->get();
         return view('Admin.Pages.Users', compact(
             'users'
         ));
@@ -195,7 +217,7 @@ Route::middleware(['auth','Admin'])->group(function(){
     Route::post('/extractQuestions', [QuestionImport::class, 'extractQuestions']);
     Route::post('/importQuestions', [QuestionImport::class, 'importQuestions']); 
 
-    Route::get('/questions/{subject}/{module}/{id}',[QuestionsPage::class, 'questions']);
+    Route::get('/questions/{topic}/{subject_name}/{module_name}/{module_id}',[QuestionsPage::class, 'questions']);
 
 
     // MODULES
@@ -208,7 +230,3 @@ Route::middleware(['auth','Admin'])->group(function(){
 
     Route::post('/logout', [Logout::class, 'logout']);
 });
-
-//compiler
-Route::get('/compiler', [CompilerController::class, 'index']);
-Route::post('/run-code', [CompilerController::class, 'run']);

@@ -40,6 +40,7 @@
 </head>
 <body class="w-screen h-screen overflow-hidden font-sans">
 
+    @include('Global.Loading_Screen', ['logo' => asset('images/Components/Logo.png') ])
     {{-- ══════════════════════════════════════ --}}
     {{-- MOBILE / TABLET (hidden on md+)       --}}
     {{-- ══════════════════════════════════════ --}}

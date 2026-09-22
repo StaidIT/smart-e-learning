@@ -9,12 +9,14 @@
     @vite(['resources/css/app.css'])
 </head>
 <body class="w-screen min-h-screen overflow-x-hidden bg-[#090014]">
+    @include('Global.Skeleton_Loading.Client_Navigation')
     <div id="app" class="w-screen flex flex-col overflow-x-hidden min-h-screen relative">
 
         <div class="fixed inset-0 -z-10 bg-gradient-to-b from-[#090014] via-[#1A0B2E] to-[#0D0620]"></div>
         <div class="fixed top-[-10%] right-[-10%] -z-10 w-[600px] h-[600px] rounded-full bg-[#4C1D95]/25 blur-[120px]"></div>
         <div class="fixed bottom-[-10%] left-[-10%] -z-10 w-[500px] h-[500px] rounded-full bg-[#CECBF6]/10 blur-[120px]"></div>
 
+        
         <client-navigation
         :user-id="{{auth()->user()->id}}"
         user-name="{{auth()->user()->name}}"
@@ -26,16 +28,15 @@
 
             {{-- HERO SECTION --}}
             <section id="hero" class="w-full flex items-center justify-center flex-col gap-8 scroll-mt-24">
-                <div class="flex flex-col items-center justify-center w-full sm:w-[85%] md:w-[70%] lg:w-[55%] gap-4">
+                {{-- <div class="flex flex-col items-center justify-center w-full sm:w-[85%] md:w-[70%] lg:w-[55%] gap-4">
                     <h1 class="text-[28px] sm:text-[34px] md:text-[44px] font-bold text-center leading-[1.15] tracking-tight">
                         Review smarter, quiz better.
                     </h1>
                     <p class="text-[15px] md:text-[16px] text-center leading-relaxed text-white/60 max-w-[560px]">
-                        Review lessons and take quizzes across Discrete Mathematics, Introduction to
-                        Computing, Data Structures &amp; Algorithms, and Computer Programming 1 &amp; 2 —
-                        all in one place, built for IT, Computer Science, and related courses.
+                        Review lessons and take quizzes across a wide range of modules — 
+                        all in one place, designed for IT, Computer Science, and related courses.
                     </p>
-                </div>
+                </div> --}}
 
                 <div class="flex flex-col items-center justify-center gap-3">
                     @if (auth()->user()->profile_picture === null)
@@ -110,14 +111,14 @@
                     <p class="text-sm text-white/45">Pick up where you left off</p>
                 </div>
 
-                <div class="md:w-[90%] w-full gap-5 md:p-5 p-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="md:w-[90%] w-full gap-5 md:p-5 p-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
                     <subjects-card
                         :subjects-data='@json($subjects)'
                         :modules-data='@json($modules)'
                         :questions-data='@json($questions)'
                         :pretest-data='@json($user_pretests)'
-                    />
+                    ></subjects-card>
 
                 </div>
 
@@ -153,93 +154,10 @@
                     <p class="text-sm text-white/45">Top performers this term</p>
                 </div>
 
-                <div class="flex items-end justify-center gap-5 sm:gap-10 md:gap-14 w-full px-4">
-
-                    {{-- 2ND --}}
-                    <div class="flex flex-col items-center gap-3">
-                        @if (auth()->user()->profile_picture === null)
-                            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center {{auth()->user()->profile_color}}">
-                                <span class="text-3xl font-semibold">
-                                    JL
-                                </span>
-                            </div>
-                        @endif
-                        <span class="text-sm sm:text-base font-semibold text-center leading-tight">Jayson Layola</span>
-                        <div class="w-24 sm:w-28 h-20 sm:h-24 rounded-t-xl border border-[#CECBF6]/15 bg-white/[0.03] backdrop-blur-sm flex flex-col items-center justify-center gap-0.5">
-                            <span class="text-xl sm:text-2xl font-bold text-white/70">2nd</span>
-                            <span class="text-[10px] sm:text-xs font-medium text-white/40">302 points</span>
-                        </div>
-                    </div>
-
-                    {{-- 1ST --}}
-                    <div class="flex flex-col items-center gap-3">
-                        @if (auth()->user()->profile_picture === null)
-                            <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center {{auth()->user()->profile_color}} ring-4 ring-yellow-300">
-                                <span class="text-5xl font-semibold">
-                                    AV
-                                </span>
-                            </div>
-                        @endif
-                        <span class="text-base sm:text-lg font-bold text-center leading-tight">Ailama Valmores</span>
-                        <div class="w-32 sm:w-36 h-28 sm:h-32 rounded-t-xl border border-[#FFD558]/30 bg-[#FFD558]/[0.06] backdrop-blur-sm flex flex-col items-center justify-center gap-0.5">
-                            <span class="text-2xl sm:text-3xl font-bold text-[#FFD558]">1st</span>
-                            <span class="text-xs sm:text-sm font-medium text-[#FFD558]/60">303 points</span>
-                        </div>
-                    </div>
-
-                    {{-- 3RD --}}
-                    <div class="flex flex-col items-center gap-3">
-                        @if (auth()->user()->profile_picture === null)
-                            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center {{auth()->user()->profile_color}}">
-                                <span class="text-3xl font-semibold">
-                                    JM
-                                </span>
-                            </div>
-                        @endif
-                        <span class="text-sm sm:text-base font-semibold text-center leading-tight">Jared Marinas</span>
-                        <div class="w-24 sm:w-28 h-20 sm:h-24 rounded-t-xl border border-[#CECBF6]/15 bg-white/[0.03] backdrop-blur-sm flex flex-col items-center justify-center gap-0.5">
-                            <span class="text-xl sm:text-2xl font-bold text-white/70">3rd</span>
-                            <span class="text-[10px] sm:text-xs font-medium text-white/40">301 points</span>
-                        </div>
-                    </div>
-
-                </div>
-
-                {{-- RANKINGS TABLE --}}
-                <div class="w-full sm:w-[85%] lg:w-[65%] pt-10 px-4">
-                    <div class="rounded-xl border border-[#CECBF6]/15 bg-white/[0.03] backdrop-blur-sm overflow-hidden">
-
-                        {{-- HEADER ROW --}}
-                        <div class="flex items-center px-5 py-3 text-xs font-medium text-white/45 border-b border-[#CECBF6]/10">
-                            <span class="w-12">Rank</span>
-                            <span class="flex-1">Name</span>
-                            <span>Points</span>
-                        </div>
-
-                        {{-- 4TH --}}
-                        <div class="flex items-center px-5 py-3.5 border-b border-[#CECBF6]/10 hover:bg-white/[0.02] transition-colors duration-200">
-                            <span class="w-12 text-sm font-semibold text-white/60">4th</span>
-                            <span class="flex-1 text-sm font-medium">Jimwell Raza</span>
-                            <span class="text-sm font-bold text-white/70">300 pts</span>
-                        </div>
-
-                        {{-- 5TH --}}
-                        <div class="flex items-center px-5 py-3.5 border-b border-[#CECBF6]/10 hover:bg-white/[0.02] transition-colors duration-200">
-                            <span class="w-12 text-sm font-semibold text-white/60">5th</span>
-                            <span class="flex-1 text-sm font-medium">Student Fifth</span>
-                            <span class="text-sm font-bold text-white/70">265 pts</span>
-                        </div>
-
-                        {{-- 6TH --}}
-                        <div class="flex items-center px-5 py-3.5 border-b border-[#CECBF6]/10 hover:bg-white/[0.02] transition-colors duration-200">
-                            <span class="w-12 text-sm font-semibold text-white/60">6th</span>
-                            <span class="flex-1 text-sm font-medium">Student Sixth</span>
-                            <span class="text-sm font-bold text-white/70">248 pts</span>
-                        </div>
-
-                    
-                    </div>
-                </div>
+                <leaderboard
+                :users='@json($users)'
+                :leaderboard='@json($leaderboard)'
+                ></leaderboard>
 
             </section>
 

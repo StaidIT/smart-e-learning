@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Smart E-Learning</title>
     <link rel="shortcut icon" href="{{ asset('images/Components/Favicon.png') }}" type="image/x-icon">
+    @vite(['resources/css/app.css'])
 </head>
 <body class="w-screen bg-gray-50 overflow-x-hidden">
     <div id="app" class="w-screen h-screen flex flex-col overflow-hidden">
@@ -14,9 +15,9 @@
 
             <pretest-result
                 subject-name="{{ $subject_name }}"
-                topic-name="{{ $topic_name }}"
+                module-name="{{ $module_name }}"
                 subject-id="{{$subject_id}}"
-                topic-id="{{$topic_id}}"
+                module-id="{{$module_id}}"
                 :score-percent="{{ $score_percent }}"
                 message="{{ $message }}"
                 status="{{ $status }}"
@@ -26,6 +27,6 @@
         </main>
     </div>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/js/app.js'])
 </body>
 </html>

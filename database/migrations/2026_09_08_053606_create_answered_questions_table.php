@@ -14,17 +14,20 @@ return new class extends Migration
         Schema::create('answered_questions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignUuid('topic_id')
-                ->constrained('topics')
+            $table->foreignUuid('module_id')
+                ->references('id')
+                ->on('modules')
                 ->onDelete('cascade');
             $table->foreignUuid('question_id')
-                ->constrained('questions')
+                ->references('id')
+                ->on('questions')
                 ->onDelete('cascade');
+            
             $table->timestamp('answered_at');
 
             $table->index(
-                ['user_id', 'topic_id'],
-                'answered_questions_user_topic_index'
+                ['user_id', 'module_id'],
+                'answered_questions_user_module_index'
             );
 
             $table->index(

@@ -115,8 +115,9 @@ const props = defineProps({
         type: String,
         required: true
     },
-    profileColor: { type: String, default: 'bg-purple-800 text-white'}
+    profileColor: { type: String, default: 'bg-purple-800 text-white'},
 })
+
 
 const showUserMenu = ref(false);
 const userMenu = ref(true);

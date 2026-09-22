@@ -181,7 +181,7 @@
                     Next Question
                 </button>
 
-                <a v-else :href="`/result/${url(subjectName)}/${subjectId}/${url(moduleName)}/${moduleId}`"
+                <a v-else :href="`/result/question_type/${url(subjectName)}/${subjectId}/${url(moduleName)}/${moduleId}`"
                     class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-[#4C1D95] to-[#8B5CF6] hover:opacity-90 transition-opacity shadow-sm shadow-[#4C1D95]/30">
                     Finish
                 </a>

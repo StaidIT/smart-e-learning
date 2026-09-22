@@ -32,12 +32,12 @@
         <div id="app" class="h-full">
 
             <bottom-navigation></bottom-navigation>
-            <navigation 
+            <left-navigation 
                 active-page="Dashboard"
                 :id-number="{{auth()->user()->id_number}}"
                 user-name="{{auth()->user()->name}}"
                 user-email="{{auth()->user()->email}}"
-            ></navigation>
+            ></left-navigation>
 
             <main class="w-full main-bg md:w-[calc(100%-280px)] h-full flex flex-col md:ml-[280px] ml-0 p-5 overflow-hidden">
                 <dashboard-cards

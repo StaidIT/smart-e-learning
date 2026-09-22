@@ -15,12 +15,12 @@
         {{-- DELETE FEEDBACK MODAL --}}
         @include('Admin.Components.Modal.Delete_Feedback')
 
-        <navigation 
+        <left-navigation 
             active-page="Feedbacks"
             :id-number="{{auth()->user()->id_number}}"
             user-name="{{auth()->user()->name}}"
             user-email="{{auth()->user()->email}}"
-        ></navigation>
+        ></left-navigation>
 
         <main class="h-full main-bg w-[calc(100%-280px)] h-full flex flex-col ml-[280px] p-5 overflow-hidden">
             {{-- CARDS --}}

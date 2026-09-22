@@ -6,6 +6,7 @@ use App\Models\Choices;
 use App\Models\Modules;
 use App\Models\Questions;
 use App\Models\RecentActivity;
+use App\Models\TestCase;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -30,21 +31,26 @@ class Question extends Controller
             'choice_D' => 'required_if:question_type,multipleChoice|nullable|string|max:2000',
 
             'correct_choice' => 'exclude_unless:question_type,multipleChoice|required|string|in:A,B,C,D',
-            'correct_answer' => 'exclude_if:question_type,multipleChoice|required|string|max:2000',
+            'correct_answer' => 'exclude_if:question_type,coding|string|max:6000',
+
+            'test_cases' => 'required_if:question_type,coding|array|min:1',
+            'test_cases.*.scanner_input' => 'nullable|string|max:6000',
+            'test_cases.*.expected_output' => 'required|string|max:6000',
+            'test_cases.*.test_case_order' => 'required|integer|min:1',
+            'test_cases.*.is_hidden' => 'boolean',
         ]);
 
         if ($input['question_type'] === 'multipleChoice') {
 
             $correct_answer = '';
-            if($input['correct_choice'] === 'A'){
+
+            if ($input['correct_choice'] === 'A') {
                 $correct_answer = $input['choice_A'];
-            }elseif ($input['correct_choice'] === 'B') {
+            } elseif ($input['correct_choice'] === 'B') {
                 $correct_answer = $input['choice_B'];
-            }
-            elseif ($input['correct_choice'] === 'C') {
+            } elseif ($input['correct_choice'] === 'C') {
                 $correct_answer = $input['choice_C'];
-            }
-            elseif ($input['correct_choice'] === 'D') {
+            } elseif ($input['correct_choice'] === 'D') {
                 $correct_answer = $input['choice_D'];
             }
 
@@ -53,7 +59,8 @@ class Question extends Controller
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
                 'answer' => $correct_answer,
-                'explanation' => $input['explanation']
+                'explanation' => $input['explanation'],
+                'points' => 3
             ]);
 
             Choices::create([
@@ -65,55 +72,70 @@ class Question extends Controller
             ]);
 
             Modules::where('id', $input['module_id'])
-            ->update([
-                'has_question_type' => true
-            ]);
+                ->update([
+                    'has_question_type' => true
+                ]);
 
-        } elseif($input['question_type'] === 'TorF') {
+        } elseif ($input['question_type'] === 'TorF') {
+
             Questions::create([
                 'module_id' => $input['module_id'],
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
                 'answer' => $input['correct_answer'],
-                'explanation' => $input['explanation']
+                'explanation' => $input['explanation'],
+                'points' => 3
             ]);
 
             Modules::where('id', $input['module_id'])
-            ->update([
-                'has_question_type' => true
-            ]);
+                ->update([
+                    'has_question_type' => true
+                ]);
 
-        }elseif($input['question_type'] === 'identification'){
+        } elseif ($input['question_type'] === 'identification') {
+
             Questions::create([
                 'module_id' => $input['module_id'],
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
                 'answer' => $input['correct_answer'],
-                'explanation' => $input['explanation']
+                'explanation' => $input['explanation'],
+                'points' => 5
             ]);
 
             Modules::where('id', $input['module_id'])
-            ->update([
-                'has_question_type' => true
-            ]);
+                ->update([
+                    'has_question_type' => true
+                ]);
 
-        }elseif($input['question_type'] === 'coding'){
-            Questions::create([
+        } elseif ($input['question_type'] === 'coding') {
+
+            $question = Questions::create([
                 'module_id' => $input['module_id'],
                 'question' => $input['question'],
                 'question_type' => $input['question_type'],
-                'answer' => $input['correct_answer'],
+                'points' => 10
             ]);
 
+            foreach ($input['test_cases'] as $testCase) {
+                TestCase::create([
+                    'question_id' => $question->id,
+                    'scanner_input' => $testCase['scanner_input'] ?? null,
+                    'expected_output' => $testCase['expected_output'],
+                    'test_case_order' => $testCase['test_case_order'],
+                    'is_hidden' => $testCase['is_hidden'] ?? false,
+                ]);
+            }
+
             Modules::where('id', $input['module_id'])
-            ->update([
-                'has_coding' => true
-            ]);
-        }   
+                ->update([
+                    'has_coding' => true
+                ]);
+        }
 
         $questions = Questions::where('module_id', $input['module_id'])
-        ->select('id', 'module_id', 'question', 'question_type', 'answer')
-        ->get();
+            ->select('id', 'module_id', 'question', 'question_type', 'answer')
+            ->get();
 
         RecentActivity::create([
             'name' => auth()->user()->name,
@@ -127,10 +149,7 @@ class Question extends Controller
             'message' => 'Question added successfully!',
             'new_questions' => $questions,
         ]);
-
-
     }
-
 
 
 

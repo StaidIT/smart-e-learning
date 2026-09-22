@@ -72,7 +72,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
             </svg>
-            <span>{{ isSubmitting ? 'Logging in...' : 'Log in' }}</span>
+            <span>{{ isSubmitting ? 'Checking Credentials...' : 'Log in' }}</span>
         </button>
 
         <div class="flex justify-center items-center gap-2 text-sm mt-[clamp(0.75rem,2vh,1.25rem)]">
@@ -82,7 +82,11 @@
 
     </form>
 
-    <Loading_Screen :logo="logo" v-if="showLoadingScreen"/>
+    <Loading_Screen 
+    v-if="showLoadingScreen"
+    :logo="logo" 
+    :message="'Logging you in...'"
+    />
 
 </template>
 

@@ -15,12 +15,12 @@
 
         
 
-        <navigation 
+        <left-navigation 
             active-page="Subjects"
             :id-number="{{ auth()->user()->id_number }}"
             user-name="{{ auth()->user()->name }}"
             user-email="{{ auth()->user()->email }}"
-        ></navigation>
+        ></left-navigation>
 
         <questions-main 
             module-id="{{ $module_id }}"

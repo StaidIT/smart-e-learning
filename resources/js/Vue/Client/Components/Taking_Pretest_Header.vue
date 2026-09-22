@@ -10,13 +10,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 shrink-0 transition-transform duration-150 group-active:-translate-x-0.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
-            <span class="hidden sm:inline text-sm font-medium whitespace-nowrap">Back to Choose Topic</span>
+            <span class="hidden sm:inline text-sm font-medium whitespace-nowrap">Back to Choose Module</span>
         </button>
 
         <!-- Title: absolutely centered on the header, independent of side button widths -->
         <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center min-w-0 px-2 max-w-[50vw] sm:max-w-[40vw]">
             <span class="text-white font-semibold text-sm sm:text-base leading-tight truncate w-full text-center">
-                Discrete Mathematics
+                {{ subjectName }}
             </span>
             <span class="text-[#CECBF6]/60 text-xs mt-0.5 tracking-wide truncate w-full text-center">
                 Propositional Logic
@@ -44,6 +44,10 @@
 
 <script setup>
 import { ref } from 'vue'
+
+const props = defineProps({
+    subjectName: { type:String, required: true}
+})
 
 const muted = ref(false)
 

@@ -9,7 +9,9 @@
 </head>
 <body class="w-screen bg-gray-50 overflow-x-hidden">
     <div id="app" class="w-screen h-screen flex flex-col overflow-hidden">
-        <taking-pretest-header></taking-pretest-header>
+        <taking-pretest-header
+        subject-name="{{$subject_name}}"
+        ></taking-pretest-header>
 
         <main class="w-full h-[calc(100%-80px)] flex items-start justify-center pt-[30px] px-4 overflow-y-auto scrollbar-thin">
             <pretest-form 

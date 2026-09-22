@@ -7,13 +7,18 @@ use App\Models\Choices;
 use App\Models\Modules;
 use App\Models\Questions;
 use App\Models\Subjects;
+use Illuminate\Http\Request;
 // use App\Models\Topics;
 
 class QuestionsPage extends Controller
 {
-
-    public function questions($subject, $module, $id)
+    public function questions(Request $request)
     {
+        $topic = $request->topic;
+        $subject_name = $request->subject_name;
+        $module_name = $request->module_name;
+        $module_id = $request->module_id;
+
         $questionColumns = [
             'id',
             'module_id',
@@ -21,17 +26,22 @@ class QuestionsPage extends Controller
             'question_type',
             'answer',
             'explanation',
-            
         ];
 
-        if ($module === 'All') {
+        if ($module_name === 'All') {
 
-            $subject_id = $id;
+            $subject_id = $module_id;
 
             $module_ids = Modules::where('subject_id', $subject_id)
                 ->pluck('id');
 
-            $questions = Questions::whereIn('module_id', $module_ids)
+            $questionsQuery = Questions::whereIn('module_id', $module_ids);
+
+            if ($topic !== 'none') {
+                $questionsQuery->where('topic_id', $topic);
+            }
+
+            $questions = $questionsQuery
                 ->select($questionColumns)
                 ->get();
 
@@ -39,14 +49,18 @@ class QuestionsPage extends Controller
 
         } else {
 
-            $questions = Questions::where('module_id', $id)
+            $subject_id = Modules::where('id', $module_id)
+                ->value('subject_id');
+
+            $questionsQuery = Questions::where('module_id', $module_id);
+
+            if ($topic !== 'none') {
+                $questionsQuery->where('topic_id', $topic);
+            }
+
+            $questions = $questionsQuery
                 ->select($questionColumns)
                 ->get();
-
-            $module_id = $id;
-
-            $subject_id = Modules::where('id', $id)
-                ->value('subject_id');
         }
 
         $subject_name = Subjects::where('id', $subject_id)
@@ -89,5 +103,4 @@ class QuestionsPage extends Controller
             'subject_name'
         ));
     }
-    
 }

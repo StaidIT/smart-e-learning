@@ -7,7 +7,7 @@
     >
       <Transition name="modal-scale" appear>
         <div
-          class="relative w-[30%] min-w-[380px] max-w-lg bg-white rounded-xl shadow-2xl shadow-black/30 flex flex-col p-6 gap-5 max-h-[90vh] overflow-y-auto scrollbar-thin"
+          class="relative w-[30%] min-w-[380px] max-w-lg bg-white rounded-xl shadow-2xl shadow-black/30 flex flex-col p-6 gap-5 max-h-[90vh] overflow-hidden"
         >
           <!-- CLOSE BUTTON -->
           <button
@@ -23,7 +23,7 @@
 
           <input type="hidden" v-model="module_id">
 
-          <div class="w-full flex flex-col gap-1 pr-6">
+          <div class="w-full flex flex-col gap-1 pr-6 shrink-0">
             <div class="flex items-center gap-3">
               <div class="shrink-0 w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8B5CF6" class="size-5">
@@ -96,6 +96,9 @@
                 Upload File
               </button>
             </div>
+          </div>
+
+          <div id="whiteBG" class="w-full flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-6 -mr-6">
 
             <!-- ================= MANUAL ENTRY MODE ================= -->
             <form
@@ -374,20 +377,57 @@
                   class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[64px]"
                 ></textarea>
               </div>
-              
-              <!-- EXPECTED OUTPUT -->
-              <div v-if="selected_questionType === 'coding'" class="w-full flex flex-col gap-2 mt-3">
-                <label for="expected_output" class="text-sm font-medium text-gray-700">
-                  Expected Output
-                </label>
 
-                <textarea
-                  v-model="correct_answer"
-                  id="expected_output"
-                  placeholder="Enter Expected Output"
-                  rows="3"
-                  class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[80px] font-mono"
-                ></textarea>
+              <!-- TEST CASES -->
+              <div v-if="selected_questionType === 'coding'" class="w-full flex flex-col gap-2 mt-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-medium text-gray-700">Test Cases</label>
+                  <button
+                    type="button"
+                    @click="addTestCase"
+                    class="text-xs font-semibold text-[#8B5CF6] hover:text-[#7C3AED] cursor-pointer"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                <div
+                  v-for="(testCase, index) in testCases"
+                  :key="index"
+                  class="w-full flex items-start gap-2"
+                >
+                  <span class="shrink-0 flex items-center justify-center w-6 h-8 rounded-md bg-gray-100 text-xs font-semibold text-gray-500 mt-0.5">
+                    {{ index + 1 }}
+                  </span>
+
+                  <div class="w-full flex flex-col gap-1.5">
+                    <textarea
+                      v-model="testCase.scanner_input"
+                      placeholder="Scanner Input"
+                      rows="3"
+                      class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[72px] font-mono"
+                    ></textarea>
+
+                    <textarea
+                      v-model="testCase.expected_output"
+                      placeholder="Expected Output"
+                      rows="3"
+                      class="w-full border border-gray-300 rounded-md p-2 outline-none text-sm bg-transparent placeholder:text-gray-400 focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-colors resize-y min-h-[72px] font-mono scrollbar-thin"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="button"
+                    @click="removeTestCase(index)"
+                    :disabled="testCases.length === 1"
+                    aria-label="Remove test case"
+                    class="shrink-0 p-1.5 mt-0.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <!-- BUTTONS -->
@@ -626,6 +666,20 @@ const identification = computed(() => {
   return selected_questionType.value === 'identification';
 });
 
+// ---- TEST CASES STATE (coding questions) ----
+const testCases = ref([
+  { scanner_input: '', expected_output: '', is_hidden: false }
+]);
+
+function addTestCase() {
+  testCases.value.push({ scanner_input: '', expected_output: '', is_hidden: false });
+}
+
+function removeTestCase(index) {
+  if (testCases.value.length === 1) return;
+  testCases.value.splice(index, 1);
+}
+
 // ---- FILE UPLOAD STATE ----
 const fileInputRef = ref(null);
 const selectedFile = ref(null);
@@ -696,40 +750,46 @@ async function addQuestionForm(Sname, Mname) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                question: question.value,
-                explanation: explanation.value,
-                question_type: selected_questionType.value,
-                correct_choice: correct_choice.value,
-                correct_answer: correct_answer.value,
-                choice_A: choices.value.A,
-                choice_B: choices.value.B,
-                choice_C: choices.value.C,
-                choice_D: choices.value.D,
-                module_id: module_id.value,
+              question: question.value,
+              explanation: explanation.value,
+              question_type: selected_questionType.value,
+              correct_choice: correct_choice.value,
+              correct_answer: correct_answer.value,
+              choice_A: choices.value.A,
+              choice_B: choices.value.B,
+              choice_C: choices.value.C,
+              choice_D: choices.value.D,
+              module_id: module_id.value,
 
-                subject_name : Sname,
-                module_name: Mname
-            })
+              test_cases: selected_questionType.value === 'coding'
+                  ? testCases.value.map((testCase, index) => ({
+                      scanner_input: testCase.scanner_input || null,
+                      expected_output: testCase.expected_output,
+                      test_case_order: index + 1,
+                      is_hidden: testCase.is_hidden || false
+                  }))
+                  : [],
+
+              subject_name: Sname,
+              module_name: Mname
+          })
         });
         const data = await response.json();
 
-        if (!response.ok) {
-            console.log('Server errors:', data);
-            return;
-        }
-
-        if (data.success) {
-          showToast.value = true;
-          message.value = data.message;
-          emit('questions-added', data.new_questions);
-          emit('close-add');
-      }
         console.log('Status:', response.status);
         console.log('Response:', data);
 
         if (!response.ok) {
-            console.error('Validation errors:', data.errors);
+            console.error('Server errors:', data.errors || data);
             return;
+        }
+
+        if (data.success) {
+            showToast.value = true;
+            message.value = data.message;
+
+            emit('questions-added', data.new_questions);
+            emit('close-add');
         }
 
     }finally{
@@ -745,6 +805,7 @@ async function addQuestionForm(Sname, Mname) {
       correct_choice.value = '';
       correct_answer.value = '';
       explanation.value = '';
+      testCases.value = [{ scanner_input: '', expected_output: '', is_hidden: false }];
     }
 }
 

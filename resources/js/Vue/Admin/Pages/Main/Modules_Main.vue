@@ -210,7 +210,7 @@
                         <div class="flex items-center gap-2">
 
 
-                            <a    :href="`/questions/${subject.subject_name.toLowerCase().replace(/\s+/g, '-')}/${module.module_name.toLowerCase().replace(/\s+/g, '-')}/${module.id}`"
+                            <a    :href="`/questions/none/${subject.subject_name.toLowerCase().replace(/\s+/g, '-')}/${module.module_name.toLowerCase().replace(/\s+/g, '-')}/${module.id}`"
                                 class="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-2.5 py-2 rounded-md
                                 bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#CECBF6]
                                 hover:bg-[#8B5CF6]/25 hover:border-[#8B5CF6]/45

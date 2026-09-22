@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\AnsweredQuestions;
 use App\Models\Choices;
+use App\Models\Leaderboard;
 use App\Models\Modules;
+use App\Models\PretestSavedCodes;
 use App\Models\Questions;
 use App\Models\Subjects;
+use App\Models\TemporaryPoints;
+use App\Models\TestCase;
 use App\Models\UserPretest;
+use App\Models\UserScoreboard;
 use Illuminate\Http\Request;
 
 class Pretest extends Controller
@@ -62,8 +67,18 @@ class Pretest extends Controller
             ->get()
             ->groupBy('module_id')
             ->map(function ($moduleQuestions) {
-                return $moduleQuestions->take(15);
-            });
+                $nonCoding = $moduleQuestions
+                    ->where('question_type', '!=', 'coding')
+                    ->shuffle()
+                    ->take(15);
+
+                $coding = $moduleQuestions
+                    ->where('question_type', 'coding')
+                    ->shuffle()
+                    ->take(5);
+
+                return $nonCoding->concat($coding)->values();
+        });
 
         $subject_id = $request->subject_id;
         $answered_questions = AnsweredQuestions::where('user_id', auth()->id())->get();
@@ -87,6 +102,8 @@ class Pretest extends Controller
             ->where('subject_id', $request->subject_id)
             ->where('module_id', $request->module_id)
             ->first();
+        
+        $module = Modules::findOrFail($request->module_id);
 
         if (!$user_pretest) {
             return redirect()->route('home');
@@ -106,6 +123,8 @@ class Pretest extends Controller
             ]);
         }
 
+        
+
         $answered_questions_data = AnsweredQuestions::where('user_id', auth()->id())
             ->where('module_id', $request->module_id)
             ->get();
@@ -122,19 +141,12 @@ class Pretest extends Controller
 
         $remaining_questions = max(0, $total_questions - $answered_count);
 
-        $questions = Questions::where('module_id', $request->module_id)
-            ->whereNotIn('id', $answered_question_ids)
-            ->inRandomOrder()
-            ->limit($remaining_questions)
-            ->get();
-
-        $choices = Choices::whereIn('question_id', $questions->pluck('id'))->get();
-
         $module_id = $request->module_id;
         $subject_id = $request->subject_id;
 
         $subject_name = Subjects::where('id', $subject_id)
             ->value('subject_name');
+        
 
         $module_name = Modules::where('id', $module_id)
             ->value('module_name');
@@ -144,21 +156,68 @@ class Pretest extends Controller
             ->where('module_id', $module_id)
             ->value('scored');
 
-        return view(
-            'Client.Pages.PreTest',
-            compact(
-                'questions',
-                'choices',
-                'answered_count',
-                'answered_questions_data',
-                'module_id',
-                'subject_id',
-                'subject_name',
-                'module_name',
-                'score'
-            )
-        );
+
+        if($request->to_take === 'question_type'){
+           $questions = Questions::where('module_id', $request->module_id)
+            ->whereNotIn('id', $answered_question_ids)
+            ->whereIn('question_type', ['multipleChoice', 'TorF', 'identification'])
+            ->inRandomOrder()
+            ->limit($remaining_questions)
+            ->get();
+
+            $choices = Choices::whereIn('question_id', $questions->pluck('id'))->get();
+
+            return view(
+                'Client.Pages.PreTest',
+                compact(
+                    'questions',
+                    'choices',
+                    'answered_count',
+                    'answered_questions_data',
+                    'module_id',
+                    'subject_id',
+                    'subject_name',
+                    'module_name',
+                    'score'
+                )
+            );
+            
+        }elseif($request->to_take === 'coding'){
+            $questions = Questions::where('module_id', $request->module_id)
+                ->whereNotIn('id', $answered_question_ids)
+                ->where('question_type', 'coding')
+                ->inRandomOrder()
+                ->limit($remaining_questions)
+                ->get();
+
+            $saved_codes = PretestSavedCodes::where('user_id', auth()->user()->id)
+                ->whereIn('question_id', $questions->pluck('id'))
+                ->get();
+            
+            $test_case = TestCase::whereIn('question_id', $questions->pluck('id'))->get();
+
+            return view(
+                'Client.Pages.Pretest_Code',
+                compact(
+                    'questions',
+                    'test_case',
+                    'saved_codes',
+                    'answered_count',
+                    'answered_questions_data',
+                    'module_id',
+                    'subject_id',
+                    'subject_name',
+                    'module_name',
+                    'score'
+                )
+            );
+        }
+
     }
+
+
+
+
 
     public function submitAnswer(Request $request)
     {
@@ -237,9 +296,16 @@ class Pretest extends Controller
             'answered_at' => now()
         ]);
 
-        $correct = 'no';
+        $correct = 'no'; 
+        $current_temporary_points = TemporaryPoints::where('user_id', auth()->id())->value('points') ?? 0;
 
         if ($correct_answer === $student_answer) {
+
+            TemporaryPoints::updateOrCreate(
+                ['user_id' => auth()->id()],
+                ['points' => $current_temporary_points + $question->points]
+            );
+
             $score->increment('scored');
             $correct = 'yes';
         }
@@ -258,12 +324,17 @@ class Pretest extends Controller
         ]);
     }
 
+
+    // ------------------------------------------------------------------------------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>> RESULT PRETEST
+
     public function resultPretest(Request $request)
     {
         $user_pretest = UserPretest::where('user_id', auth()->id())
             ->where('subject_id', $request->subject_id)
             ->where('module_id', $request->module_id)
             ->first();
+
+        $module = Modules::findOrFail($request->module_id);
 
         if (!$user_pretest) {
             return redirect()->route('home');
@@ -273,77 +344,178 @@ class Pretest extends Controller
             return redirect()->route('home');
         }
 
-        $questions_count = Questions::where('module_id', $request->module_id)->count();
-
-        $total_questions = min($questions_count, 15);
-
-        $answered_count = AnsweredQuestions::where('user_id', auth()->id())
-            ->where('module_id', $request->module_id)
-            ->whereIn(
-                'question_id',
-                Questions::where('module_id', $request->module_id)->pluck('id')
-            )
-            ->count();
-
-        if ($total_questions > 0 && $answered_count < $total_questions) {
-            return redirect()->route('pretest.taking', [
-                'subject_id' => $request->subject_id,
-                'module_id' => $request->module_id,
-                'module_name' => str_replace(' ', '_', Modules::where('id', $request->module_id)->value('module_name'))
-            ]);
+        if ($request->type === 'coding') {
+            $questions = Questions::where('module_id', $module->id)
+                ->where('question_type', 'coding')
+                ->get();
+        } else {
+            $questions = Questions::where('module_id', $module->id)
+                ->whereIn('question_type', [
+                    'multipleChoice',
+                    'TorF',
+                    'identification'
+                ])
+                ->get();
         }
 
-        $score = (int) $user_pretest->scored;
+        $question_ids = $questions->pluck('id');
 
-        $score = min($score, $total_questions);
+        $answered_questions = AnsweredQuestions::where('user_id', auth()->id())
+            ->where('module_id', $module->id)
+            ->whereIn('question_id', $question_ids)
+            ->pluck('question_id');
 
-        $score_percent = $total_questions > 0
-            ? ($score / $total_questions) * 100
-            : 0;
+        $total_questions = min($questions->count(), 15);
 
-        $status = $score_percent >= 75 ? 'Passed' : 'Failed';
+        $answered_count = $answered_questions->count();
 
         $subject_name = Subjects::where('id', $request->subject_id)
             ->value('subject_name');
 
-        $module_name = Modules::where('id', $request->module_id)
-            ->value('module_name');
+        if ($total_questions > 0 && $answered_count < $total_questions) {
+            return redirect()->route('pretest.taking', [
+                'to_take' => $request->type,
+                'subject_name' => $subject_name,
+                'subject_id' => $request->subject_id,
+                'module_name' => str_replace(
+                    ' ',
+                    '_',
+                    Modules::where('id', $module->id)->value('module_name')
+                ),
+                'module_id' => $module->id,
+            ]);
+        }
+
+        $selected_questions = $questions
+            ->whereIn('id', $answered_questions)
+            ->values();
+
+        $total_possible_points = (int) $selected_questions->sum('points');
+
+        if ($request->type === 'coding') {
+            $section_score = (int) $selected_questions->sum('points');
+        } else {
+            $temporary_points = TemporaryPoints::where('user_id', auth()->id())
+                ->first();
+
+            $coding_points = array_sum(
+                session('pretest_coding_points', [])
+            );
+
+            $section_score = max(
+                0,
+                (int) ($temporary_points?->points ?? 0) - $coding_points
+            );
+        }
+
+        $score_percent = $total_possible_points > 0
+            ? ($section_score / $total_possible_points) * 100
+            : 0;
+
+        $status = $score_percent >= 75 ? 'Passed' : 'Failed';
+
+        $module_name = $module->module_name;
 
         $message = $status === 'Passed'
             ? "Excellent work! You passed the pretest. You're ready to move forward!"
             : "Don't give up! You didn't pass the pretest this time. Keep studying and try again!";
 
+        $temporary_points = TemporaryPoints::where('user_id', auth()->id())
+            ->first();
+
         if ($status === 'Passed') {
-            $user_pretest->update([
-                'status' => 'passed',
-                'scored' => $score
-            ]);
 
-            $nextmodule = UserPretest::where('user_id', auth()->id())
-                ->where('subject_id', $request->subject_id)
-                ->where('module_id', '>', $request->module_id)
-                ->orderBy('module_id', 'asc')
-                ->first();
-
-            if ($nextmodule) {
-                $nextmodule->update([
-                    'status' => 'current'
+            if ($request->type === 'coding') {
+                $user_pretest->update([
+                    'coding_passed' => true
+                ]);
+            } else {
+                $user_pretest->update([
+                    'questions_type_passed' => true
                 ]);
             }
-        }else{
+
+            $user_pretest->refresh();
+            $module_passed = false;
+
+            if ($module->has_question_type && $module->has_coding) {
+                if ($user_pretest->questions_type_passed &&$user_pretest->coding_passed){
+                    $module_passed = true;
+                }
+
+            } elseif ($module->has_question_type && !$module->has_coding) {
+                if ($user_pretest->questions_type_passed) {
+                    $module_passed = true;
+                }
+
+            } elseif (!$module->has_question_type && $module->has_coding) {
+                if ($user_pretest->coding_passed) {
+                    $module_passed = true;
+                }
+            }
+
+            if ($module_passed) {
+
+                $user_scoreboard = UserScoreboard::where('user_id', auth()->id())
+                    ->value('total_score') ?? 0;
+
+                UserScoreboard::updateOrCreate(
+                    ['user_id' => auth()->id()],
+                    ['total_score' => $user_scoreboard + (int) $user_pretest->scored]
+                );
+
+                $user_pretest->update([
+                    'status' => 'passed',
+                    'scored' => 0
+                ]);
+
+                if ($temporary_points && $temporary_points->points > 0) {
+                    $leaderboard = Leaderboard::firstOrCreate(
+                        ['user_id' => auth()->id()],
+                        ['points' => 0]
+                    );
+
+                    $leaderboard->increment(
+                        'points',
+                        (int) $temporary_points->points
+                    );
+
+                    $temporary_points->delete();
+                }
+
+                $nextmodule = UserPretest::where('user_id', auth()->id())
+                    ->where('subject_id', $request->subject_id)
+                    ->where('module_id', '>', $module->id)
+                    ->orderBy('module_id', 'asc')
+                    ->first();
+
+                if ($nextmodule) {
+                    $nextmodule->update([
+                        'status' => 'current'
+                    ]);
+                }
+            }
+        } else {
+
             $user_pretest->update([
                 'scored' => 0
             ]);
+
+            $temporary_points?->update([
+                'points' => 0
+            ]);
+
+            session()->forget('pretest_coding_points');
+            session()->forget('pretest_coding_run');
         }
 
         AnsweredQuestions::where('user_id', auth()->id())
-            ->where('module_id', $request->module_id)
+            ->where('module_id', $module->id)
             ->delete();
 
-        
         $subject_id = $request->subject_id;
-        $module_id = $request->module_id;
-        
+        $module_id = $module->id;
+
         return view(
             'Client.Pages.Pretest_Result',
             compact(
@@ -357,6 +529,7 @@ class Pretest extends Controller
             )
         );
     }
+        
 
     
 }

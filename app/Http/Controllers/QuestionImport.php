@@ -147,6 +147,7 @@ class QuestionImport extends Controller
                         );
 
                         $answer = trim($question['choices'][$correctChoice]);
+                        $points = 3;
 
                     } elseif ($type === 'TorF') {
 
@@ -155,12 +156,15 @@ class QuestionImport extends Controller
                                 trim($question['correct_answer'] ?? $question['answer'])
                             )
                         );
+                        $points = 3;
 
                     } else {
 
                         $answer = trim(
                             $question['correct_answer'] ?? $question['answer']
                         );
+
+                        $points = 5;
                     }
 
                     $newQuestion = Questions::create([
@@ -169,6 +173,7 @@ class QuestionImport extends Controller
                         'question_type' => $type,
                         'answer' => $answer,
                         'explanation' => trim($question['explanation']),
+                        'points' => $points
                     ]);
 
                     if ($type === 'multipleChoice') {
